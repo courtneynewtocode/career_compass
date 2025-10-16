@@ -56,14 +56,33 @@
     .btn.secondary{
       background:transparent;color:var(--accent);border:1px solid rgba(11,143,143,0.12);
     }
-    .progress{
-      .progress {
-  height:12px;
-  background:rgba(11,143,143,0.08);
-  border-radius:8px;
-  overflow:hidden;
-  margin-top:12px;
-  position: relative; /* needed for absolute positioning of percentage text */
+    .progress {
+  height: 12px;
+  background: rgba(11,143,143,0.08);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 12px;
+  position: relative; /* keep relative for overlay */
+}
+
+.progress > i {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), #0ea6a6);
+  transition: width 0.3s ease;
+}
+
+/* Percentage text */
+.progress .percent-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+  font-weight: 600;
+  color: #0b8f8f;
+  pointer-events: none; /* so clicks go through */
 }
 
 .progress div {
