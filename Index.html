@@ -384,9 +384,9 @@ function renderPage(index){
   const percent = Math.round(((index+1)/(totalPages+1))*100);
 
   let html = `
-    <div class="page-title">${s.title}</div>
-    <div class="muted small">${sectionLabelForGroup(s.group)}</div>
-    <div class="progress"><i style="width:${percent}%;"></i></div>
+  <div class="page-title">${sectionLabelForGroup(s.group)}</div>
+  <div class="muted small">Answer each statement honestly (1–5 scale)</div>
+  <div class="progress"><i style="width:${percent}%;"></i></div>
     <div style="height:12px"></div>
     <div class="rating-guide" style="background:rgba(11,143,143,0.03);padding:10px 14px;border-radius:10px;margin:8px 0 14px 0;font-size:14px">
   <strong>Rating scale:</strong> 
