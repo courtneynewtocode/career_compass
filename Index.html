@@ -388,7 +388,20 @@ function renderPage(index){
     <div class="muted small">${sectionLabelForGroup(s.group)}</div>
     <div class="progress"><i style="width:${percent}%;"></i></div>
     <div style="height:12px"></div>
-    <div id="qs"></div>
+    <div class="rating-guide" style="background:rgba(11,143,143,0.03);padding:10px 14px;border-radius:10px;margin:8px 0 14px 0;font-size:14px">
+  <strong>Rating scale:</strong> 
+  <ul style="margin:6px 0 0 18px;padding:0">
+    <li>1 = Strongly Disagree</li>
+    <li>2 = Disagree</li>
+    <li>3 = Neutral</li>
+    <li>4 = Agree</li>
+    <li>5 = Strongly Agree</li>
+  </ul>
+  <div style="margin-top:6px">There are no right or wrong answers — be honest.</div>
+</div>
+
+<div id="qs"></div>
+
 
     <div class="nav">
       <div>
