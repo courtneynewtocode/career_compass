@@ -304,9 +304,17 @@ function renderIntro(){
           <div class="card" style="padding:16px">
             <h3 style="margin:0 0 6px 0">Instructions</h3>
             <div class="muted small">
-              Read each statement carefully. Rate each from <strong>1 (Strongly Disagree)</strong> to <strong>5 (Strongly Agree)</strong>.
-              There are no right or wrong answers — be honest.
-            </div>
+  <p style="margin:0 0 6px 0;">Read each statement carefully. Then rate each statement using the following scale:</p>
+  <ul style="margin:0 0 6px 18px; padding:0;">
+    <li>1 = Strongly Disagree</li>
+    <li>2 = Disagree</li>
+    <li>3 = Neutral</li>
+    <li>4 = Agree</li>
+    <li>5 = Strongly Agree</li>
+  </ul>
+  <p style="margin:6px 0 0 0;">There are no right or wrong answers — be honest.</p>
+</div>
+
             <div style="height:12px"></div>
             <div class="muted small"><strong>Navigation</strong>: Use Next and Back. You can't move forward without answering every question on the page.</div>
             <div style="height:12px"></div>
@@ -335,14 +343,22 @@ function renderIntro(){
   `;
 
   document.getElementById('start-btn').addEventListener('click', () => {
-    demographics.studentName = document.getElementById('stu-name').value.trim();
-    demographics.age = document.getElementById('stu-age').value.trim();
-    demographics.grade = document.getElementById('stu-grade').value.trim();
-    demographics.email = document.getElementById('stu-email').value.trim();
-    demographics.contact = document.getElementById('stu-contact').value.trim();
-    demographics.date = document.getElementById('stu-date').value.trim();
-    renderPage(0);
-  });
+  demographics.studentName = document.getElementById('stu-name').value.trim();
+  demographics.age = document.getElementById('stu-age').value.trim();
+  demographics.grade = document.getElementById('stu-grade').value.trim();
+  demographics.email = document.getElementById('stu-email').value.trim();
+  demographics.contact = document.getElementById('stu-contact').value.trim();
+  demographics.date = document.getElementById('stu-date').value.trim();
+
+  // ✅ Validation check before starting
+  if (!demographics.studentName || !demographics.age || !demographics.grade) {
+    alert("Please fill in your Name, Age, and Grade before starting the assessment.");
+    return;
+  }
+
+  renderPage(0);
+});
+
 }
 
 /* Render a question page given index in sections[] */
