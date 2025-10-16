@@ -350,11 +350,24 @@ function renderIntro(){
   demographics.contact = document.getElementById('stu-contact').value.trim();
   demographics.date = document.getElementById('stu-date').value.trim();
 
-  // ✅ Validation check before starting
-  if (!demographics.studentName || !demographics.age || !demographics.grade) {
-    alert("Please fill in your Name, Age, and Grade before starting the assessment.");
-    return;
-  }
+ // ✅ Validation checks before starting
+if (!demographics.studentName || !demographics.age || !demographics.grade) {
+  alert("Please fill in your Name, Age, and Grade before starting the assessment.");
+  return;
+}
+
+// Email validation (basic pattern check)
+if (demographics.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(demographics.email)) {
+  alert("Please enter a valid email address (e.g., name@example.com).");
+  return;
+}
+
+// Cell phone validation (accepts digits, optional +27 or 0 prefix, length 10–12)
+if (demographics.contact && !/^(\+?\d{1,3})?0?\d{9}$/.test(demographics.contact)) {
+  alert("Please enter a valid contact number (e.g., 0821234567 or +27821234567).");
+  return;
+}
+
 
   renderPage(0);
 });
