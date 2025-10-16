@@ -57,7 +57,19 @@
       background:transparent;color:var(--accent);border:1px solid rgba(11,143,143,0.12);
     }
     .progress{
-      height:12px;background:rgba(11,143,143,0.08);border-radius:8px;overflow:hidden;margin-top:12px;
+      .progress {
+  height:12px;
+  background:rgba(11,143,143,0.08);
+  border-radius:8px;
+  overflow:hidden;
+  margin-top:12px;
+  position: relative; /* needed for absolute positioning of percentage text */
+}
+
+.progress div {
+  pointer-events: none;
+}
+
     }
     .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#0ea6a6); width:0%;}
     .question{margin:10px 0;padding:12px;border-radius:10px;background:var(--glass)}
@@ -389,7 +401,13 @@ function renderPage(index){
   let html = `
   <div class="page-title">${sectionLabelForGroup(s.group)}</div>
   <div class="muted small">Answer each statement honestly (1–5 scale)</div>
-  <div class="progress"><i style="width:${percent}%;"></i></div>
+  <div class="progress" style="position: relative;">
+  <i style="width:${percent}%;"></i>
+  <div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 600; color: #0b8f8f;">
+    ${percent}%
+  </div>
+</div>
+
     <div style="height:12px"></div>
     <div class="rating-guide" style="background:rgba(11,143,143,0.03);padding:10px 14px;border-radius:10px;margin:8px 0 14px 0;font-size:14px">
   <strong>Rating scale:</strong> 
