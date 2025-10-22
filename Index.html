@@ -58,6 +58,18 @@
     .btn.secondary{
       background:transparent;color:var(--accent);border:1px solid rgba(11,143,143,0.12);
     }
+
+    .top-clusters {
+  background-color: rgba(148, 196, 148, 0.3); /* light green */
+  padding: 12px;
+  border-radius: 10px;
+}
+
+.low-clusters {
+  background-color: rgba(171, 127, 119, 0.2); /* light red */
+  padding: 12px;
+  border-radius: 10px;
+}
     .progress {
   height: 24px; /* increase height */
   background: rgba(11,143,143,0.08);
@@ -649,19 +661,19 @@ function renderResults(){
       </div>
 
       <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <div style="flex:1">
-          <h4>Dominant career clusters</h4>
-          <ol>
-            ${topA.map(t=>`<li>${t.title} (Total: ${t.total})</li>`).join('')}
-          </ol>
-        </div>
-        <div style="flex:1">
-          <h4>Lowest scoring career clusters</h4>
-          <ol>
-            ${lowA.map(t=>`<li>${t.title} (Total: ${t.total})</li>`).join('')}
-          </ol>
-        </div>
-      </div>
+  <div style="flex:1" class="top-clusters">
+    <h4>Dominant career clusters</h4>
+    <ol>
+      ${topA.map(t=>`<li>${t.title} (Total: ${t.total})</li>`).join('')}
+    </ol>
+  </div>
+  <div style="flex:1" class="low-clusters">
+    <h4>Lowest scoring career clusters</h4>
+    <ol>
+      ${lowA.map(t=>`<li>${t.title} (Total: ${t.total})</li>`).join('')}
+    </ol>
+  </div>
+</div>
 
       <h3 style="margin-top:12px">Section B — Career Drivers</h3>
       <div class="two-col" style="margin-bottom:8px">
