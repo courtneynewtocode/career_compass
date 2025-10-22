@@ -9,6 +9,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 
   <style>
+
+    
     :root{
       --bg:#f6fbfb;
       --card:#ffffff;
@@ -618,11 +620,27 @@ function renderResults(){
     <div class="report" id="report-area" style="margin-top:12px">
       <h3>Demographics</h3>
       <div class="two-col">
-        <div class="metric"><strong>Name</strong><div class="small-muted">${escapeHtml(demographics.studentName || '')}</div></div>
-        <div class="metric"><strong>Age / Grade</strong><div class="small-muted">${escapeHtml(demographics.age || '')} / ${escapeHtml(demographics.grade || '')}</div></div>
-        <div class="metric"><strong>Email</strong><div class="small-muted">${escapeHtml(demographics.email || '')}</div></div>
-        <div class="metric"><strong>Contact</strong><div class="small-muted">${escapeHtml(demographics.contact || '')}</div></div>
-      </div>
+  <div class="metric">
+    <strong>Name</strong>
+    <div class="small-muted">${escapeHtml(demographics.studentName || '')}</div>
+  </div>
+  <div class="metric">
+    <strong>Age</strong>
+    <div class="small-muted">${escapeHtml(demographics.age || '')}</div>
+  </div>
+  <div class="metric">
+    <strong>Grade</strong>
+    <div class="small-muted">${escapeHtml(demographics.grade || '')}</div>
+  </div>
+  <div class="metric">
+    <strong>Email</strong>
+    <div class="small-muted">${escapeHtml(demographics.email || '')}</div>
+  </div>
+  <div class="metric">
+    <strong>Contact</strong>
+    <div class="small-muted">${escapeHtml(demographics.contact || '')}</div>
+  </div>
+</div>
 
       <h3 style="margin-top:16px">Section A — Interests (Career Clusters)</h3>
       <div class="two-col" style="margin-bottom:8px">
