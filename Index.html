@@ -722,20 +722,7 @@ const lowClusters = clusterScores.slice().sort((a,b)=>a.total - b.total).slice(0
         <div class="metric"><strong>Overall total</strong><div class="small-muted">${scores.C.overall.total}</div></div>
       </div>
 
-      <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <div style="flex:1">
-          <h4>Top 5 strengths (individual items)</h4>
-          <ol>
-            ${scores.C.overall.rank.slice(0,5).map(r=>`<li>${r.text} — Score: ${r.score}</li>`).join('')}
-          </ol>
-        </div>
-        <div style="flex:1">
-          <h4>Lowest 5 strengths (individual items)</h4>
-          <ol>
-            ${scores.C.overall.rank.slice(-5).reverse().map(r=>`<li>${r.text} — Score: ${r.score}</li>`).join('')}
-          </ol>
-        </div>
-      </div>
+      
 
       <h3 style="margin-top:12px">Section C — Strength Clusters</h3>
 <div style="display:flex;gap:12px;flex-wrap:wrap">
