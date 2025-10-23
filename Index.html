@@ -177,7 +177,7 @@ const sections = [];
 
 /* Intro + Demographics page handled separately */
 
-/* Section A — Interests (6 categories x 6 questions) */
+/* Section A : Career Clusters (6 categories x 6 questions) */
 const sectionA = [
   { key: 'realistic', title: 'Realistic (Doers)', questions: [
     "I like working with my hands to build or fix things",
@@ -230,7 +230,7 @@ const sectionA = [
 ];
 sectionA.forEach(s=>sections.push({...s, group:'A'}));
 
-/* Section B — Career Drivers (5 categories x 3 questions) */
+/* Section B : Career Drivers (5 categories x 3 questions) */
 const sectionB = [
   { key:'growth', title:'Growth', questions:[
     "Even once I am in my career, I want to learn new things.",
@@ -260,7 +260,7 @@ const sectionB = [
 ];
 sectionB.forEach(s=>sections.push({...s, group:'B'}));
 
-/* Section C — Strengths & Skills (27 items) -- split into 3 pages (9 each) */
+/* Section C : Strengths & Skills (27 items) -- split into 3 pages (9 each) */
 const strengths = [
   "I enjoy solving puzzles, riddles, or problems that require careful thought",
   "I can break down big problems into smaller, easier steps",
@@ -307,7 +307,7 @@ for(let i=0;i<3;i++){
   sections.push({ key:`strengths_p${i+1}`, title:`Strengths & Skills — Part ${i+1}`, questions:chunk, group:'C' });
 }
 
-/* Section D — Growth Areas (15 items) split into 2 pages: 8 & 7 */
+/* Section D : Growth Areas (15 items) split into 2 pages: 8 & 7 */
 const growthAreas = [
   "I find it hard to stay focused for a long time",
   "I sometimes avoid subjects I find difficult",
@@ -353,7 +353,7 @@ function renderIntro(){
   currentPage = -1;
   app.innerHTML = `
     <div>
-      <div class="page-title"><strong>Career Compass — Student Assessment</strong></div>
+      <div class="page-title"><strong>Career Compass : Student Assessment</strong></div>
       <h1>Welcome to The Career Compass Assessment!</h1>
 <p>
   This assessment will help you discover your <strong>interests</strong>, 
@@ -551,10 +551,10 @@ function renderPage(index){
 
 function sectionLabelForGroup(g){
   switch(g){
-    case 'A': return 'Section A — Interests (Career Clusters)';
-    case 'B': return 'Section B — Career Drivers';
-    case 'C': return 'Section C — Strengths & Skills';
-    case 'D': return 'Section D — Growth Areas';
+    case 'A': return 'Section A : Career Clusters(Interests)';
+    case 'B': return 'Section B : Career Drivers';
+    case 'C': return 'Section C : Strengths & Skills';
+    case 'D': return 'Section D : Growth Areas';
     default: return '';
   }
 }
