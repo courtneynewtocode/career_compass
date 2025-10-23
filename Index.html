@@ -696,11 +696,7 @@ const lowClusters = clusterScores.slice().sort((a,b)=>a.total - b.total).slice(0
 </div>
 
       <h3 style="margin-top:12px">Section B : Career Drivers</h3>
-      <div class="two-col" style="margin-bottom:8px">
-        ${bList.map(item=>`<div class="metric"><strong>${item.title}</strong><div class="small-muted">Total: ${item.total}</div></div>`).join('')}
-      </div>
-      <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <div style="flex:1">
+     
           <h4>Top 3 career drivers</h4>
           <ol>
             ${topB.map(t=>`<li>${t.title} (Total: ${t.total})</li>`).join('')}
@@ -714,9 +710,7 @@ const lowClusters = clusterScores.slice().sort((a,b)=>a.total - b.total).slice(0
         </div>
       </div>
 
-      <h3 style="margin-top:12px">Section C : Strengths & Skills</h3>
-            
-
+               
       <h3 style="margin-top:12px">Section C : Strength Clusters</h3>
 <div style="display:flex;gap:12px;flex-wrap:wrap">
   <div style="flex:1" class="top-clusters">
