@@ -677,7 +677,7 @@ const lowClusters = clusterScores.slice().sort((a,b)=>a.total - b.total).slice(0
   </div>
 </div>
 
-      <h3 style="margin-top:16px">Section A — Interests (Career Clusters)</h3>
+      <h3 style="margin-top:16px">Section A : Career Clusters (Interests)</h3>
       
 
       <div style="display:flex;gap:12px;flex-wrap:wrap">
@@ -695,7 +695,7 @@ const lowClusters = clusterScores.slice().sort((a,b)=>a.total - b.total).slice(0
   </div>
 </div>
 
-      <h3 style="margin-top:12px">Section B — Career Drivers</h3>
+      <h3 style="margin-top:12px">Section B : Career Drivers</h3>
       <div class="two-col" style="margin-bottom:8px">
         ${bList.map(item=>`<div class="metric"><strong>${item.title}</strong><div class="small-muted">Total: ${item.total}</div></div>`).join('')}
       </div>
@@ -714,14 +714,10 @@ const lowClusters = clusterScores.slice().sort((a,b)=>a.total - b.total).slice(0
         </div>
       </div>
 
-      <h3 style="margin-top:12px">Section C — Strengths & Skills</h3>
-      <div style="margin-bottom:8px">
-        <div class="metric"><strong>Overall total</strong><div class="small-muted">${scores.C.overall.total}</div></div>
-      </div>
+      <h3 style="margin-top:12px">Section C : Strengths & Skills</h3>
+            
 
-      
-
-      <h3 style="margin-top:12px">Section C — Strength Clusters</h3>
+      <h3 style="margin-top:12px">Section C : Strength Clusters</h3>
 <div style="display:flex;gap:12px;flex-wrap:wrap">
   <div style="flex:1" class="top-clusters">
     <h4>Top 3 strength clusters</h4>
@@ -736,7 +732,7 @@ const lowClusters = clusterScores.slice().sort((a,b)=>a.total - b.total).slice(0
     </ol>
   </div>
 </div>
-      <h3 style="margin-top:12px">Section D — Growth Areas</h3>
+      <h3 style="margin-top:12px">Section D : Growth Areas</h3>
       <div style="margin-bottom:8px">
         <div class="metric"><strong>Overall total</strong><div class="small-muted">${scores.D.overall.total}</div></div>
       </div>
