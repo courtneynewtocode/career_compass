@@ -291,6 +291,17 @@ const strengths = [
   "I learn from setbacks and come back stronger"
 ];
 
+const strengthClusters = [
+  { name: "Analytical thinking", indices: [0,1,2] },
+  { name: "Creativity and innovation", indices: [3,4,5] },
+  { name: "Communication skills", indices: [6,7,8] },
+  { name: "Practical/Hands-on skills", indices: [9,10,11] },
+  { name: "Leadership and initiative", indices: [12,13,14] },
+  { name: "Empathy and helping", indices: [15,16,17] },
+  { name: "Detail orientation", indices: [18,19,20] },
+  { name: "Adaptability and learning agility", indices: [21,22,23] },
+  { name: "Resilience and perseverance", indices: [24,25,26] },
+];
 for(let i=0;i<3;i++){
   const chunk = strengths.slice(i*9, (i+1)*9);
   sections.push({ key:`strengths_p${i+1}`, title:`Strengths & Skills — Part ${i+1}`, questions:chunk, group:'C' });
@@ -590,6 +601,15 @@ function renderResults(){
 
   scores.C.overall = { total: strengthTotalOverall, count: strengths.length, avg:(strengthTotalOverall/strengths.length).toFixed(2), rank: strengthRank };
 
+const clusterScores = strengthClusters.map(cluster => {
+  const total = cluster.indices.reduce((sum, idx) => sum + (strengthTotals[idx] || 0), 0);
+  const avg = (total / cluster.indices.length).toFixed(2);
+  return { name: cluster.name, total, avg };
+});
+
+// Sort clusters for ranking
+const topClusters = clusterScores.slice().sort((a,b)=>b.total - a.total).slice(0,3);
+const lowClusters = clusterScores.slice().sort((a,b)=>a.total - b.total).slice(0,3);
   // Section D growth areas
   const growthKeys = ['growth_1','growth_2'];
   let growthTotals = {};
@@ -717,6 +737,21 @@ function renderResults(){
         </div>
       </div>
 
+      <h3 style="margin-top:12px">Section C — Strength Clusters</h3>
+<div style="display:flex;gap:12px;flex-wrap:wrap">
+  <div style="flex:1" class="top-clusters">
+    <h4>Top 3 strength clusters</h4>
+    <ol>
+      ${topClusters.map(c=>`<li>${c.name} — Total: ${c.total}, Avg: ${c.avg}</li>`).join('')}
+    </ol>
+  </div>
+  <div style="flex:1" class="low-clusters">
+    <h4>Lowest 3 strength clusters</h4>
+    <ol>
+      ${lowClusters.map(c=>`<li>${c.name} — Total: ${c.total}, Avg: ${c.avg}</li>`).join('')}
+    </ol>
+  </div>
+</div>
       <h3 style="margin-top:12px">Section D — Growth Areas</h3>
       <div style="margin-bottom:8px">
         <div class="metric"><strong>Overall total</strong><div class="small-muted">${scores.D.overall.total}</div></div>
