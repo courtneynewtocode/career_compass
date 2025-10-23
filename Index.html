@@ -104,7 +104,7 @@
   pointer-events: none;
 }
 
-    }
+    
     .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#0ea6a6); width:0%;}
     .question{margin:10px 0;padding:12px;border-radius:10px;background:var(--glass)}
     .qtext{font-weight:600;margin-bottom:8px}
@@ -618,10 +618,13 @@ function renderResults(){
 
   // Build report HTML
   let html = `
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-      <div>
-        <h2>Career Compass — Student Report</h2>
-        <div class="small-muted">Generated: ${demographics.date || new Date().toISOString().slice(0,10)}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+    <div>
+      <h2>Career Compass — Student Report</h2>
+      <p>
+        Congratulations on completing the Career Compass Assessment! The report below now provides you with a deeper understanding of your <em>True North</em> — the direction that aligns your unique potential and purpose. Please use this report as a <strong>guide</strong> in your career decision making journey. Know that your interests and potential can and most likely will change, depending on what you expose yourself to.
+      </p>
+      <div class="small-muted">Generated: ${demographics.date || new Date().toISOString().slice(0,10)}</div>
       </div>
       <div>
         <button class="btn" id="download-pdf">Download PDF</button>
