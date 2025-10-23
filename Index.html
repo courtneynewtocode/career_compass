@@ -701,12 +701,30 @@ const lowClusters = clusterScores.slice().sort((a,b)=>a.total - b.total).slice(0
   </div>
 </div>
 
-      <h3 style="margin-top:12px">Section B : Career Drivers</h3>
-     
-          <h4>Top 3 career drivers</h4>
-          <ol>
-            ${topB.map(t=>`<li>${t.title} (Total: ${t.total})</li>`).join('')}
-          </ol>
+    <h3 style="margin-top:12px">Section B : Career Drivers</h3>
+
+<p style="margin-bottom:16px; line-height:1.6;">
+  In the assessment, you were given 3 questions each on 5 different categories. These categories are the 5 main career drivers/motivators (which are currently age-appropriate for you – this will change as you age). 
+  A career driver/motivator is the thing that pushes you forward and gives you energy in your future career. It’s what matters most to you when you think about work.<br><br>
+  Why did we ask you this? 
+  To begin to align important traits to your dominant/preferred career cluster.<br><br>
+  Based on the results of the assessment, your career drivers scored accordingly:
+</p>
+
+<div style="display:flex;gap:12px;flex-wrap:wrap">
+  <div style="flex:1">
+    <h4>Top 3 career drivers</h4>
+    <ol>
+      ${topB.map(t=>`<li>${t.title} (Total: ${t.total})</li>`).join('')}
+    </ol>
+  </div>
+  <div style="flex:1">
+    <h4>Bottom 2 career drivers</h4>
+    <ol>
+      ${lowB.map(t=>`<li>${t.title} (Total: ${t.total})</li>`).join('')}
+    </ol>
+  </div>
+</div>
         </div>
         <div style="flex:1">
           <h4>Bottom 2 career drivers</h4>
