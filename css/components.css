@@ -1,0 +1,171 @@
+/* Components: Buttons, Progress, Questions, etc. */
+
+/* Typography */
+header h1 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.page-title {
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.muted.small {
+  font-size: 13px;
+}
+
+.small-muted {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.footer-note {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+/* Buttons */
+.btn {
+  background: var(--accent);
+  color: white;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn.secondary {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid rgba(11, 143, 143, 0.12);
+}
+
+/* Progress Bar */
+.progress {
+  height: 24px;
+  background: rgba(11, 143, 143, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 12px;
+  position: relative;
+}
+
+.progress > i {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), #0ea6a6);
+  transition: width 0.3s ease;
+}
+
+.progress .percent-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  font-weight: 600;
+  color: #171818;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.progress div {
+  pointer-events: none;
+}
+
+/* Questions */
+.question {
+  margin: 10px 0;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--glass);
+}
+
+.qtext {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.options {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+label.option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: white;
+  border: 1px solid #e7eff0;
+  cursor: pointer;
+  min-width: 86px;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.option {
+  flex: 1;
+  padding: 12px 0;
+  text-align: center;
+  border-radius: 10px;
+  border: 1px solid #e7eff0;
+  background-color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.option:hover {
+  background: #eaf7f7;
+  border-color: var(--accent);
+}
+
+.option.selected {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+input[type="radio"] {
+  accent-color: var(--accent);
+}
+
+/* Navigation */
+.nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+/* Rating Guide */
+.rating-guide {
+  background: rgba(11, 143, 143, 0.03);
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin: 8px 0 14px 0;
+  font-size: 14px;
+}
+
+.rating-guide ul {
+  margin: 6px 0 0 18px;
+  padding: 0;
+}

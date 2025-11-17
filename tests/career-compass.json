@@ -1,0 +1,393 @@
+{
+  "testId": "career-compass",
+  "testName": "Career Compass Assessment",
+  "description": "Discover your interests, strengths, and growth areas. By understanding these key aspects of yourself, you'll begin the journey of finding your True North — the direction that aligns with your unique potential and purpose.",
+  "estimatedTime": "15-20 minutes",
+  "instructions": {
+    "title": "Welcome to The Career Compass Assessment!",
+    "content": "This assessment will help you discover your <strong>interests</strong>, <strong>strengths</strong>, and <strong>growth areas</strong>. By understanding these key aspects of yourself, you'll begin the journey of finding your <em>True North</em> — the direction that aligns with your unique potential and purpose.",
+    "ratingScale": [
+      { "value": 1, "label": "Strongly Disagree" },
+      { "value": 2, "label": "Disagree" },
+      { "value": 3, "label": "Neutral" },
+      { "value": 4, "label": "Agree" },
+      { "value": 5, "label": "Strongly Agree" }
+    ],
+    "tips": [
+      "Read each statement carefully",
+      "There are no right or wrong answers — be honest",
+      "Use Next and Back buttons to navigate",
+      "You can't move forward without answering every question on the page"
+    ]
+  },
+  "demographics": {
+    "fields": [
+      {
+        "key": "studentName",
+        "label": "Student name",
+        "type": "text",
+        "required": true,
+        "placeholder": "Student name"
+      },
+      {
+        "key": "age",
+        "label": "Age",
+        "type": "number",
+        "required": true,
+        "placeholder": "Age"
+      },
+      {
+        "key": "grade",
+        "label": "Grade",
+        "type": "text",
+        "required": true,
+        "placeholder": "Grade"
+      },
+      {
+        "key": "email",
+        "label": "Email address",
+        "type": "email",
+        "required": false,
+        "placeholder": "Email address",
+        "validation": "email"
+      },
+      {
+        "key": "contact",
+        "label": "Contact no.",
+        "type": "tel",
+        "required": false,
+        "placeholder": "Contact no.",
+        "validation": "phone"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "section-a",
+      "title": "Career Clusters (Interests)",
+      "description": "Section A: Career Clusters",
+      "instructions": "Rate each statement honestly (1–5 scale)",
+      "categories": [
+        {
+          "key": "realistic",
+          "title": "Realistic (Doers)",
+          "questions": [
+            "I like working with my hands to build or fix things",
+            "I am interested in how machines or tools work",
+            "I enjoy being outdoors and active",
+            "I like practical tasks more than reading or writing",
+            "I enjoy sports or physical activities",
+            "I like working with animals or plants"
+          ],
+          "scoring": {
+            "method": "sum"
+          }
+        },
+        {
+          "key": "investigative",
+          "title": "Investigative (Thinkers)",
+          "questions": [
+            "I like solving puzzles or figuring out how things work",
+            "I enjoy doing research or learning about new topics",
+            "I like science experiments",
+            "I enjoy finding solutions to problems",
+            "I am curious about how things are made",
+            "I like working with numbers and data"
+          ],
+          "scoring": {
+            "method": "sum"
+          }
+        },
+        {
+          "key": "artistic",
+          "title": "Artistic (Creators)",
+          "questions": [
+            "I enjoy drawing, painting, or designing things",
+            "I like writing stories, poems, or songs",
+            "I enjoy music, acting, or dance",
+            "I like creating new ideas or trying new ways of doing things",
+            "I enjoy decorating or making things look attractive",
+            "I like expressing myself in creative ways"
+          ],
+          "scoring": {
+            "method": "sum"
+          }
+        },
+        {
+          "key": "social",
+          "title": "Social (Helpers)",
+          "questions": [
+            "I enjoy helping people with their problems",
+            "I like working in teams or groups",
+            "I enjoy teaching or explaining things to others",
+            "I like making people feel welcome and included",
+            "I enjoy listening to people's stories",
+            "I like doing things that make a difference in people's lives"
+          ],
+          "scoring": {
+            "method": "sum"
+          }
+        },
+        {
+          "key": "enterprising",
+          "title": "Enterprising (Persuaders)",
+          "questions": [
+            "I enjoy leading group projects",
+            "I like making decisions and being in charge",
+            "I enjoy selling ideas or products to others",
+            "I like finding ways to make money",
+            "I enjoy convincing people to try new things",
+            "I like organising events or activities"
+          ],
+          "scoring": {
+            "method": "sum"
+          }
+        },
+        {
+          "key": "conventional",
+          "title": "Conventional (Organisers)",
+          "questions": [
+            "I enjoy following a clear plan or set of instructions",
+            "I like keeping things neat and organised",
+            "I enjoy working with numbers, charts, or spreadsheets",
+            "I like following rules and making sure others do too",
+            "I enjoy filing, sorting, or organising information",
+            "I like doing tasks step-by-step in the right order"
+          ],
+          "scoring": {
+            "method": "sum"
+          }
+        }
+      ],
+      "pagination": {
+        "type": "category"
+      }
+    },
+    {
+      "sectionId": "section-b",
+      "title": "Career Drivers",
+      "description": "Section B: Career Drivers",
+      "instructions": "Rate each statement honestly (1–5 scale)",
+      "categories": [
+        {
+          "key": "growth",
+          "title": "Growth",
+          "questions": [
+            "Even once I am in my career, I want to learn new things.",
+            "Work that is challenging and pushes me to grow every day, excites me.",
+            "Career progression and promotion opportunities are important to me."
+          ],
+          "scoring": {
+            "method": "sum"
+          }
+        },
+        {
+          "key": "security",
+          "title": "Security",
+          "questions": [
+            "I want a job that provides a steady and predictable income every month.",
+            "I prefer a predictable career path with clear expectations and not a career that is unpredictable.",
+            "Earning a high income is important to me."
+          ],
+          "scoring": {
+            "method": "sum"
+          }
+        },
+        {
+          "key": "flexibility",
+          "title": "Flexibility",
+          "questions": [
+            "I want to choose where and when I work.",
+            "I value variety in my tasks and projects.",
+            "Work–life balance is a high priority for me."
+          ],
+          "scoring": {
+            "method": "sum"
+          }
+        },
+        {
+          "key": "recognition",
+          "title": "Recognition",
+          "questions": [
+            "It's important to me that my work is recognised by others.",
+            "I enjoy roles where I can take leadership or be seen as an expert.",
+            "I'm motivated by achievements and awards."
+          ],
+          "scoring": {
+            "method": "sum"
+          }
+        },
+        {
+          "key": "innovation",
+          "title": "Innovation",
+          "questions": [
+            "I enjoy finding new ways to solve problems.",
+            "I want to work in a fast-changing, creative environment.",
+            "I value freedom to experiment and test new ideas."
+          ],
+          "scoring": {
+            "method": "sum"
+          }
+        }
+      ],
+      "pagination": {
+        "type": "category"
+      }
+    },
+    {
+      "sectionId": "section-c",
+      "title": "Strengths & Skills",
+      "description": "Section C: Strengths & Skills",
+      "instructions": "Rate each statement honestly (1–5 scale)",
+      "categories": [
+        {
+          "key": "strengths",
+          "title": "Strengths & Skills",
+          "questions": [
+            "I enjoy solving puzzles, riddles, or problems that require careful thought",
+            "I can break down big problems into smaller, easier steps",
+            "I like finding logical reasons for why things happen",
+            "I often come up with new ideas or different ways of doing things",
+            "I enjoy activities like drawing, writing, or designing",
+            "I can think of unique solutions when faced with challenges",
+            "I feel comfortable expressing my thoughts in front of others",
+            "I can explain things clearly so that people understand me",
+            "I listen carefully when others are speaking",
+            "I enjoy working with tools, objects, or technology",
+            "I prefer learning by doing rather than just reading or listening",
+            "I like fixing or building things with my hands",
+            "I enjoy taking the lead in group projects or activities",
+            "I feel confident making decisions that affect others",
+            "I motivate people to work together toward a goal",
+            "I notice when someone is upset and try to help",
+            "I enjoy supporting and encouraging my friends or classmates",
+            "I care about making a positive difference in people's lives",
+            "I pay attention to small details that others might miss",
+            "I double-check my work to avoid mistakes",
+            "I like organizing information in a neat and accurate way",
+            "I adjust quickly when plans or situations change",
+            "I enjoy learning new skills, even if they are difficult at first",
+            "I can stay calm and figure things out in new or unfamiliar situations",
+            "I keep trying, even when tasks are difficult",
+            "I don't give up easily when I face challenges",
+            "I learn from setbacks and come back stronger"
+          ],
+          "scoring": {
+            "method": "cluster",
+            "clusterIndices": [
+              {
+                "name": "Analytical thinking",
+                "indices": [0, 1, 2]
+              },
+              {
+                "name": "Creativity and innovation",
+                "indices": [3, 4, 5]
+              },
+              {
+                "name": "Communication skills",
+                "indices": [6, 7, 8]
+              },
+              {
+                "name": "Practical/Hands-on skills",
+                "indices": [9, 10, 11]
+              },
+              {
+                "name": "Leadership and initiative",
+                "indices": [12, 13, 14]
+              },
+              {
+                "name": "Empathy and helping",
+                "indices": [15, 16, 17]
+              },
+              {
+                "name": "Detail orientation",
+                "indices": [18, 19, 20]
+              },
+              {
+                "name": "Adaptability and learning agility",
+                "indices": [21, 22, 23]
+              },
+              {
+                "name": "Resilience and perseverance",
+                "indices": [24, 25, 26]
+              }
+            ]
+          }
+        }
+      ],
+      "pagination": {
+        "type": "chunk",
+        "chunkSize": 9
+      }
+    },
+    {
+      "sectionId": "section-d",
+      "title": "Growth Areas",
+      "description": "Section D: Growth Areas",
+      "instructions": "Rate each statement honestly (1–5 scale)",
+      "categories": [
+        {
+          "key": "growth_areas",
+          "title": "Growth Areas",
+          "questions": [
+            "I find it hard to stay focused for a long time",
+            "I sometimes avoid subjects I find difficult",
+            "I can get nervous speaking in front of others",
+            "I sometimes struggle to manage my time",
+            "I can find it hard to work in a team",
+            "I sometimes avoid asking for help when I need it",
+            "I can get distracted easily",
+            "I find it hard to finish tasks I start",
+            "I sometimes struggle with planning ahead",
+            "I find it hard to remember spoken instructions",
+            "I can get stressed when things don't go as planned",
+            "I sometimes leave things until the last minute",
+            "I can get frustrated when learning something new",
+            "I sometimes avoid taking the lead even when I have good ideas",
+            "I can find it difficult to explain my ideas clearly"
+          ],
+          "scoring": {
+            "method": "sum"
+          }
+        }
+      ],
+      "pagination": {
+        "type": "chunk",
+        "chunkSize": 8
+      }
+    }
+  ],
+  "reporting": {
+    "sections": [
+      {
+        "sectionId": "section-a",
+        "title": "Section A: Career Clusters (Interests)",
+        "description": "In the assessment, you were given 6 questions each on 6 different categories. These categories are the 6 different career clusters as defined by Dr John Holland. Why did we ask you this? To begin to narrow down your career choices based on your natural personality traits. Based on the results of the assessment, your dominant/preferred career clusters are:",
+        "display": "top3-bottom3"
+      },
+      {
+        "sectionId": "section-b",
+        "title": "Section B: Career Drivers",
+        "description": "In the assessment, you were given 3 questions each on 5 different categories. These categories are the 5 main career drivers/motivators (which are currently age-appropriate for you – this will change as you age). A career driver/motivator is the thing that pushes you forward and gives you energy in your future career. It's what matters most to you when you think about work.<br><br>Why did we ask you this? To begin to align important traits to your dominant/preferred career cluster.<br><br>Based on the results of the assessment, your career drivers scored accordingly:",
+        "display": "top3-bottom3"
+      },
+      {
+        "sectionId": "section-c",
+        "title": "Section C: Strength Clusters",
+        "description": "Description for Section C",
+        "display": "top3-bottom3"
+      },
+      {
+        "sectionId": "section-d",
+        "title": "Section D: Growth Areas",
+        "description": "Description for Section D",
+        "display": "top3-bottom3"
+      }
+    ],
+    "emailRecipient": "info@prolificdev.com",
+    "completionMessage": {
+      "title": "Assessment Complete!",
+      "message": "Thank you for completing the Career Compass Assessment! Your results have been sent to your coach, who will be in touch with you shortly to discuss your personalized career pathway."
+    }
+  }
+}

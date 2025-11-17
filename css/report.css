@@ -1,0 +1,44 @@
+/* Report Styling */
+.report {
+  padding: 18px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff, #fbffff);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.report h2 {
+  margin-top: 0;
+}
+
+.metric {
+  padding: 12px;
+  border-radius: 10px;
+  background: #f8feff;
+  border: 1px solid rgba(11, 143, 143, 0.04);
+}
+
+.top-clusters {
+  background-color: rgba(148, 196, 148, 0.3);
+  padding: 12px;
+  border-radius: 10px;
+}
+
+.low-clusters {
+  background-color: rgba(171, 127, 119, 0.2);
+  padding: 12px;
+  border-radius: 10px;
+}
+
+.report table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.report table tr td {
+  padding: 8px;
+  border-bottom: 1px dashed #e9f6f6;
+}
+
+.report table tr:last-child td {
+  border-bottom: none;
+}
