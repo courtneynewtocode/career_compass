@@ -14,21 +14,22 @@ Results will be emailed to: **info@prolificdev.com**
 
 **How it works:**
 - Pure JavaScript - no server-side code
-- Browser builds HTML email using `js/email-builder.js`
-- Sends directly to mailer API via `fetch()`
-- Optional PDF attachment (generated server-side by mailer API)
+- Browser builds simple HTML email
+- Generates PDF client-side using html2pdf.js
+- Sends email + PDF to mailer API via FormData
 - Can be hosted anywhere (GitHub Pages, Netlify, S3, CDN, etc.)
 
 **Configuration options in `js/config.js`:**
 - `showResultsToUser: true` - Show results page to student (false = skip to thank you)
-- `generatePdf: true` - Attach PDF to email (false = HTML email only)
+- `attachPdfReport: true` - Attach PDF to email (false = simple email only)
+- `storeResults: false` - Store results locally for dashboard (true = enable dashboard)
 
 ---
 
 ## 🧪 Step 2: Test It (30 seconds)
 
 1. Open `test.html` in your browser (even locally!)
-2. Press **Ctrl+Shift+D** (enables debug mode)
+2. Press **Ctrl+Shift+Z** (enables debug mode)
 3. Click **"Skip to Results"**
 4. Click **"Submit Results"**
 5. Check your email!
@@ -40,7 +41,7 @@ Results will be emailed to: **info@prolificdev.com**
 1. Open `index.html` in your browser
 2. Click "Start Assessment"
 3. Fill in student details (or use debug shortcuts)
-4. Complete assessment (or press Ctrl+Shift+D to skip)
+4. Complete assessment (or press Ctrl+Shift+Z to skip)
 5. Submit and check email
 
 ---
@@ -70,7 +71,7 @@ Results will be emailed to: **info@prolificdev.com**
 
 ## 🎯 Debug Shortcuts
 
-Press **Ctrl+Shift+D** on test page for:
+Press **Ctrl+Shift+Z** on test page for:
 - **Fill all answers** with 3s
 - **Skip to results** directly
 - **Clear session**
@@ -82,9 +83,10 @@ Makes testing super fast! ⚡
 
 ## 📚 Next Steps
 
-- **Full Setup**: Read [SETUP.md](SETUP.md)
-- **Features**: See [README.md](README.md)
-- **Architecture**: Review [MIGRATION.md](MIGRATION.md)
+- **Add/Edit Tests**: Read [USER_GUIDE.md](USER_GUIDE.md) - Simple guide for non-technical users
+- **Configuration**: See [CONFIGURATION.md](CONFIGURATION.md)
+- **Features**: Check [README.md](README.md)
+- **Technical Details**: Review [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)
 
 ---
 

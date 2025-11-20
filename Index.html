@@ -94,36 +94,10 @@
       </p>
     </div>
 
-    <div class="test-grid">
-      <!-- Career Compass Test -->
-      <div class="test-card">
-        <h2>Career Compass Assessment</h2>
-        <p>
-          Discover your interests, strengths, and growth areas. Find your True North
-          — the direction that aligns with your unique potential and purpose.
-        </p>
-        <div class="meta">
-          <span>⏱️ 15-20 minutes</span>
-          <span>📊 4 sections</span>
-        </div>
-        <a href="test.html?test=career-compass" class="btn" style="text-decoration: none; display: inline-block;">
-          Start Assessment
-        </a>
-      </div>
-
-      <!-- Placeholder for future tests -->
-      <div class="test-card" style="opacity: 0.6; pointer-events: none;">
-        <h2>Additional Assessments</h2>
-        <p>
-          More assessments coming soon! Check back later for additional career
-          exploration tools and resources.
-        </p>
-        <div class="meta">
-          <span>🚧 Coming Soon</span>
-        </div>
-        <button class="btn secondary" disabled>
-          Not Available Yet
-        </button>
+    <div class="test-grid" id="test-grid">
+      <!-- Tests will be loaded dynamically -->
+      <div style="text-align: center; padding: 40px; color: var(--muted);">
+        Loading assessments...
       </div>
     </div>
 
@@ -134,5 +108,78 @@
       </p>
     </div>
   </div>
+
+  <script>
+    // Dynamically load and display available tests
+    async function loadTests() {
+      try {
+        // Fetch the test manifest
+        const manifestResponse = await fetch('tests/index.json');
+        const manifest = await manifestResponse.json();
+
+        // Fetch metadata for each test
+        const testPromises = manifest.tests.map(async (testId) => {
+          try {
+            const response = await fetch(`tests/${testId}.json`);
+            const testData = await response.json();
+
+            // Count sections
+            const sectionCount = testData.sections ? testData.sections.length : 0;
+
+            return {
+              testId: testData.testId,
+              testName: testData.testName,
+              description: testData.description,
+              estimatedTime: testData.estimatedTime,
+              sectionCount: sectionCount
+            };
+          } catch (error) {
+            console.error(`Failed to load test: ${testId}`, error);
+            return null;
+          }
+        });
+
+        const tests = (await Promise.all(testPromises)).filter(test => test !== null);
+
+        // Render test cards
+        const testGrid = document.getElementById('test-grid');
+
+        if (tests.length === 0) {
+          testGrid.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: var(--muted);">
+              No assessments available at this time.
+            </div>
+          `;
+          return;
+        }
+
+        testGrid.innerHTML = tests.map(test => `
+          <div class="test-card">
+            <h2>${test.testName}</h2>
+            <p>${test.description}</p>
+            <div class="meta">
+              <span>⏱️ ${test.estimatedTime}</span>
+              <span>📊 ${test.sectionCount} sections</span>
+            </div>
+            <a href="test.html?test=${test.testId}" class="btn" style="text-decoration: none; display: inline-block;">
+              Start Assessment
+            </a>
+          </div>
+        `).join('');
+
+      } catch (error) {
+        console.error('Failed to load tests:', error);
+        const testGrid = document.getElementById('test-grid');
+        testGrid.innerHTML = `
+          <div style="text-align: center; padding: 40px; color: var(--muted);">
+            Failed to load assessments. Please try again later.
+          </div>
+        `;
+      }
+    }
+
+    // Load tests when page loads
+    loadTests();
+  </script>
 </body>
 </html>

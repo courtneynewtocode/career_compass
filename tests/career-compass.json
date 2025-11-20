@@ -5,7 +5,7 @@
   "estimatedTime": "15-20 minutes",
   "instructions": {
     "title": "Welcome to The Career Compass Assessment!",
-    "content": "This assessment will help you discover your <strong>interests</strong>, <strong>strengths</strong>, and <strong>growth areas</strong>. By understanding these key aspects of yourself, you'll begin the journey of finding your <em>True North</em> — the direction that aligns with your unique potential and purpose.",
+    "content": "This assessment will help you discover your <strong>interests</strong>, <strong>strengths</strong>, and <strong>growth areas</strong>. <br>By understanding these key aspects of yourself, you'll begin the journey of finding your <em>True North</em> — the direction that aligns with your unique potential and purpose.",
     "ratingScale": [
       { "value": 1, "label": "Strongly Disagree" },
       { "value": 2, "label": "Disagree" },
@@ -39,9 +39,25 @@
       {
         "key": "grade",
         "label": "Grade",
-        "type": "text",
+        "type": "select",
         "required": true,
-        "placeholder": "Grade"
+        "placeholder": "Select your grade",
+        "options": [
+          { "value": "K", "label": "Kindergarten (K)" },
+          { "value": "R", "label": "Grade R" },
+          { "value": "1", "label": "Grade 1" },
+          { "value": "2", "label": "Grade 2" },
+          { "value": "3", "label": "Grade 3" },
+          { "value": "4", "label": "Grade 4" },
+          { "value": "5", "label": "Grade 5" },
+          { "value": "6", "label": "Grade 6" },
+          { "value": "7", "label": "Grade 7" },
+          { "value": "8", "label": "Grade 8" },
+          { "value": "9", "label": "Grade 9" },
+          { "value": "10", "label": "Grade 10" },
+          { "value": "11", "label": "Grade 11" },
+          { "value": "12", "label": "Grade 12" }
+        ]
       },
       {
         "key": "email",
@@ -347,7 +363,33 @@
             "I can find it difficult to explain my ideas clearly"
           ],
           "scoring": {
-            "method": "sum"
+            "method": "cluster",
+            "clusterIndices": [
+              {
+                "name": "Focus & Attention",
+                "indices": [0, 6]
+              },
+              {
+                "name": "Time Management",
+                "indices": [3, 8, 11]
+              },
+              {
+                "name": "Communication",
+                "indices": [2, 14]
+              },
+              {
+                "name": "Perseverance & Task Completion",
+                "indices": [1, 7, 12]
+              },
+              {
+                "name": "Collaboration & Self-Advocacy",
+                "indices": [4, 5]
+              },
+              {
+                "name": "Adaptability & Stress Management",
+                "indices": [10, 9, 13]
+              }
+            ]
           }
         }
       ],
@@ -362,26 +404,30 @@
       {
         "sectionId": "section-a",
         "title": "Section A: Career Clusters (Interests)",
-        "description": "In the assessment, you were given 6 questions each on 6 different categories. These categories are the 6 different career clusters as defined by Dr John Holland. Why did we ask you this? To begin to narrow down your career choices based on your natural personality traits. Based on the results of the assessment, your dominant/preferred career clusters are:",
+        "description": "In the assessment, you were given 6 questions each on 6 different categories. These categories are the 6 different career clusters as defined by Dr John Holland.<br><strong>Why did we ask you this?</strong> To begin to narrow down your career choices based on your natural personality traits.<br>Based on the results of the assessment, your dominant/preferred career clusters are:",
+        "guidance": "<strong>What you should do:</strong> Start researching jobs/careers fields within your dominant/preferred career clusters.<br><em>People with inconsistent patterns may find it beneficial to explore careers in specialized, interdisciplinary, or unique fields that align with their diverse traits.</em>",
         "display": "top3-bottom3"
       },
       {
         "sectionId": "section-b",
         "title": "Section B: Career Drivers",
-        "description": "In the assessment, you were given 3 questions each on 5 different categories. These categories are the 5 main career drivers/motivators (which are currently age-appropriate for you – this will change as you age). A career driver/motivator is the thing that pushes you forward and gives you energy in your future career. It's what matters most to you when you think about work.<br><br>Why did we ask you this? To begin to align important traits to your dominant/preferred career cluster.<br><br>Based on the results of the assessment, your career drivers scored accordingly:",
-        "display": "top3-bottom3"
+        "description": "In the assessment, you were given 3 questions each on 5 different categories. These categories are the 5 main career drivers/motivators (which are currently age appropriate for you – this will change as you age). A career driver/motivator is the thing that pushes you forward and gives you energy in your future career. It's what matters most to you when you think about work.<br><strong>Why did we ask you this?</strong> To begin to align important traits to your dominant/preferred career clusters.<br>Based on the results of the assessment, your career drivers scored accordingly:",
+        "guidance": "<strong>What you should do:</strong> Start narrowing down your dominant/preferred clusters (and subsequent career choices), based on your Top 3 career drivers.",
+        "display": "top3-bottom2"
       },
       {
         "sectionId": "section-c",
-        "title": "Section C: Strength Clusters",
-        "description": "Description for Section C",
-        "display": "top3-bottom3"
+        "title": "Section C: Strengths and Skills",
+        "description": "In the assessment, you were asked to evaluate yourself on 27 different strengths and skills. These can be further categorized into 9 strength clusters. These skills have been identified through research to be current high demand skills within the workplace. In line with helping you find your 'True North', it is important then to analyze your current strengths within these skills.<br><strong>Why did we ask you this?</strong> To begin to identify your strengths and identify how these strengths are aligned to your dominant/preferred career cluster.<br>Based on the results of the assessment, your strengths clusters ranked as below:",
+        "guidance": "<strong>What you should do:</strong><br>1. Look to see how relevant your top 3 strengths are to your dominant/preferred career cluster<br>2. Look to see how relevant your lowest scoring 3 strengths are to your dominant/preferred career cluster.<br>3. Find ways to improve your lowest scoring 3 strengths. Feel free to check our list of training courses and workshops.",
+        "display": "grouped-thirds"
       },
       {
         "sectionId": "section-d",
         "title": "Section D: Growth Areas",
-        "description": "Description for Section D",
-        "display": "top3-bottom3"
+        "description": "In the assessment, you were asked to evaluate yourself on 15 workplace readiness behaviors. These can be further categorized into 6 growth areas. These behaviors have been identified through research to be current high demand skills within the workplace. In line with helping you find your 'True North', it is important to know and work on, what your growth areas may be, as these behaviors are necessary for you to be successful in your chosen field.<br><strong>Why did we ask you this?</strong> To begin to identify your growth areas and understand how these are aligned to your dominant/preferred career cluster.<br><em>Note: The statements in this section are worded negatively, so a <strong>higher score indicates a greater need for growth</strong> in that area.</em><br>Based on the results of the assessment, your growth areas ranked as below (1-3 being highest growth areas):",
+        "guidance": "<strong>What you should do:</strong><br>1. Look to see how relevant your highest scoring growth areas are to your dominant/preferred career cluster<br>2. Find ways to improve your 3 highest growth areas. Feel free to check our list of training courses and workshops.",
+        "display": "grouped-reverse"
       }
     ],
     "emailRecipient": "info@prolificdev.com",

@@ -34,7 +34,7 @@ showResultsToUser: false  // Skip directly to thank you page
 
 ---
 
-### `generatePdf`
+### `attachPdfReport`
 
 **Type:** Boolean
 **Default:** `true`
@@ -42,23 +42,52 @@ showResultsToUser: false  // Skip directly to thank you page
 Controls whether a PDF is attached to the email.
 
 ```javascript
-generatePdf: true   // Email includes HTML + PDF attachment
-generatePdf: false  // Email includes HTML only (no PDF)
+attachPdfReport: true   // Email includes PDF attachment (generated client-side)
+attachPdfReport: false  // Email includes simple HTML only (no PDF)
 ```
 
 **When `true`:**
-- Mailer API generates PDF from HTML report
-- PDF attached to email automatically
-- Recipient gets both HTML email and PDF file
+- PDF generated client-side in browser using html2pdf.js
+- PDF attached to email automatically via FormData
+- Recipient gets simple HTML email + PDF attachment
+- Takes a few seconds to generate
 
 **When `false`:**
-- Email contains HTML report only
+- Email contains simple HTML summary only
 - No PDF generation
 - Faster email delivery
 
 **Use cases:**
-- `true` - When recipient needs downloadable/printable PDF
-- `false` - When HTML email is sufficient (saves processing time)
+- `true` - When recipient needs downloadable/printable PDF report (recommended)
+- `false` - When simple email notification is sufficient
+
+---
+
+### `storeResults`
+
+**Type:** Boolean
+**Default:** `false`
+
+Controls whether results are stored locally for dashboard viewing.
+
+```javascript
+storeResults: true   // Save results to local storage API
+storeResults: false  // Only send email (no storage)
+```
+
+**When `true`:**
+- Results saved to `data/results/` directory
+- Accessible via `dashboard.html`
+- Stored as JSON files
+
+**When `false`:**
+- Results only sent via email
+- No local storage
+- Dashboard will be empty
+
+**Use cases:**
+- `true` - When you want to view all results in a dashboard
+- `false` - When email delivery is sufficient (default)
 
 ---
 
@@ -69,13 +98,15 @@ generatePdf: false  // Email includes HTML only (no PDF)
 const Config = {
   mailer: { /* ... */ },
   showResultsToUser: true,
-  generatePdf: true
+  attachPdfReport: true,
+  storeResults: false
 };
 ```
 
 **Behavior:**
 - Student sees results ✓
-- Email sent with PDF ✓
+- Email sent with PDF attachment ✓
+- No local storage
 - Best for formative assessments
 
 ---
@@ -85,46 +116,52 @@ const Config = {
 const Config = {
   mailer: { /* ... */ },
   showResultsToUser: false,
-  generatePdf: true
+  attachPdfReport: true,
+  storeResults: false
 };
 ```
 
 **Behavior:**
 - Student does NOT see results
 - Email sent with PDF to admin only
+- No local storage
 - Best for summative/confidential assessments
 
 ---
 
-### Example 3: Show Results + No PDF
+### Example 3: Show Results + Store Locally
 ```javascript
 const Config = {
   mailer: { /* ... */ },
   showResultsToUser: true,
-  generatePdf: false
+  attachPdfReport: true,
+  storeResults: true
 };
 ```
 
 **Behavior:**
 - Student sees results ✓
-- Email sent as HTML only (no PDF)
-- Faster processing, good for quick feedback
+- Email sent with PDF ✓
+- Results saved to dashboard ✓
+- Best when you want both email and dashboard access
 
 ---
 
-### Example 4: Hide Results + No PDF
+### Example 4: Email Only (No PDF, No Storage)
 ```javascript
 const Config = {
   mailer: { /* ... */ },
   showResultsToUser: false,
-  generatePdf: false
+  attachPdfReport: false,
+  storeResults: false
 };
 ```
 
 **Behavior:**
 - Student does NOT see results
-- Email sent as HTML only
-- Fastest processing, minimal student visibility
+- Simple email sent (no PDF)
+- No local storage
+- Fastest processing, minimal footprint
 
 ---
 
@@ -154,17 +191,18 @@ mailer: {
    - Does not require user to click any button
    - Happens before showing results or completion page
 
-2. **PDF generation happens server-side**
-   - Handled by mailer API
-   - No client-side PDF library needed
-   - Uses the same HTML that's sent in email
+2. **PDF generation happens client-side**
+   - Generated in browser using html2pdf.js library
+   - Attached to email via FormData/multipart upload
+   - Takes a few seconds to generate
+   - No server-side processing needed
 
 3. **Configuration changes require re-deployment**
    - Edit `js/config.js`
    - Upload to server or redeploy
-   - No cache clearing needed (new sessions get new config)
+   - Clear browser cache if testing locally
 
-4. **Both flags are independent**
+4. **All flags are independent**
    - You can enable/disable them separately
    - Choose any combination based on your needs
 
@@ -174,7 +212,7 @@ mailer: {
 
 1. Set your desired configuration in `js/config.js`
 2. Open `test.html` in browser
-3. Press `Ctrl+Shift+D` (debug mode)
+3. Press `Ctrl+Shift+Z` (debug mode)
 4. Click "Skip to Results"
 5. Observe behavior based on your settings
 6. Check email to verify PDF attachment (if enabled)

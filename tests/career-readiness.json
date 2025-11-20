@@ -1,0 +1,110 @@
+{
+  "testId": "career-readiness",
+  "testName": "Career Readiness Assessment",
+  "description": "A comprehensive assessment designed for university students to evaluate their preparedness for entering the workplace. Gain insights into your career drivers, transferrable skills, career alignment, and readiness gaps.",
+  "estimatedTime": "1-5 minutes",
+  "instructions": {
+    "title": "Welcome to the Career Readiness Assessment!",
+    "content": "This assessment is designed specifically for university students to help you understand your readiness for the workplace. You'll explore your <strong>career drivers</strong>, <strong>transferrable skills</strong>, <strong>career alignment</strong>, and identify any <strong>readiness gaps</strong> that may need attention before entering your chosen field.",
+    "ratingScale": [
+      { "value": 1, "label": "Strongly Disagree" },
+      { "value": 2, "label": "Disagree" },
+      { "value": 3, "label": "Neutral" },
+      { "value": 4, "label": "Agree" },
+      { "value": 5, "label": "Strongly Agree" }
+    ],
+    "tips": [
+      "Answer honestly based on your current abilities and experiences",
+      "Consider your university experiences and any work experience",
+      "There are no right or wrong answers",
+      "Use Next and Back buttons to navigate"
+    ]
+  },
+  "demographics": {
+    "fields": [
+      {
+        "key": "studentName",
+        "label": "Full Name",
+        "type": "text",
+        "required": true,
+        "placeholder": "Your full name"
+      },
+      {
+        "key": "age",
+        "label": "Age",
+        "type": "number",
+        "required": true,
+        "placeholder": "Your age"
+      },
+      {
+        "key": "grade",
+        "label": "Year of Study",
+        "type": "select",
+        "required": true,
+        "placeholder": "Select your year of study",
+        "options": [
+          { "value": "1st Year", "label": "1st Year" },
+          { "value": "2nd Year", "label": "2nd Year" },
+          { "value": "3rd Year", "label": "3rd Year" },
+          { "value": "4th Year", "label": "4th Year" },
+          { "value": "Final Year", "label": "Final Year" },
+          { "value": "Postgraduate", "label": "Postgraduate" }
+        ]
+      },
+      {
+        "key": "email",
+        "label": "Email Address",
+        "type": "email",
+        "required": false,
+        "placeholder": "your.email@university.edu",
+        "validation": "email"
+      },
+      {
+        "key": "contact",
+        "label": "Contact Number",
+        "type": "tel",
+        "required": false,
+        "placeholder": "Your contact number",
+        "validation": "phone"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "section-a",
+      "description": "Workplace Readiness Self-Assessment",
+      "instructions": "Rate each statement based on your current level of confidence and ability",
+      "categories": [
+        {
+          "key": "workplace-readiness",
+          "title": "Workplace Readiness",
+          "questions": [
+            "I am confident in my ability to communicate professionally in a workplace setting",
+            "I can effectively manage my time and prioritize tasks to meet deadlines",
+            "I am comfortable working both independently and as part of a team",
+            "I understand the professional standards and expectations of my chosen career field"
+          ],
+          "scoring": {
+            "method": "sum"
+          }
+        }
+      ]
+    }
+  ],
+  "reporting": {
+    "sections": [
+      {
+        "sectionId": "section-a",
+        "title": "Career Readiness Overview",
+        "description": "This section provides an initial assessment of your current workplace readiness based on key professional competencies. These foundational skills are essential for success in any career path.<br><strong>Why did we ask you this?</strong> To establish a baseline understanding of your current readiness level and identify areas where additional preparation or support may be beneficial before entering the workforce.<br>Based on your responses, here is your current readiness assessment:",
+        "guidance": "<strong>What you should do:</strong><br>1. Review your scores and identify which areas you feel most confident in<br>2. For lower-scoring areas, consider seeking additional training, workshops, or mentorship<br>3. Discuss your results with your career advisor to create a personalized development plan<br>4. Remember that career readiness is a journey – continuous improvement is key",
+        "display": "total-only"
+      }
+    ],
+    "emailRecipient": "info@prolificdev.com",
+    "completionMessage": {
+      "title": "Assessment Complete!",
+      "message": "Thank you for completing the Career Readiness Assessment! Your results provide valuable insights into your current workplace preparedness. Your career advisor will review your results and contact you shortly to discuss next steps and create a personalized development plan."
+    }
+  }
+}

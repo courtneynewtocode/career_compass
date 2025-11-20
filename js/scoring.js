@@ -160,6 +160,7 @@ const Scoring = {
       report.sections[reportSection.sectionId] = {
         title: reportSection.title,
         description: reportSection.description,
+        guidance: reportSection.guidance,
         display: reportSection.display,
         categories: categories
       };
@@ -168,6 +169,32 @@ const Scoring = {
       if (reportSection.display === 'top3-bottom3') {
         report.sections[reportSection.sectionId].top3 = this.getTopN(categories, 3);
         report.sections[reportSection.sectionId].bottom3 = this.getBottomN(categories, 3);
+      } else if (reportSection.display === 'top3-bottom2') {
+        report.sections[reportSection.sectionId].top3 = this.getTopN(categories, 3);
+        report.sections[reportSection.sectionId].bottom2 = this.getBottomN(categories, 2);
+      } else if (reportSection.display === 'all-ranked') {
+        // For all-ranked display, show all clusters ranked from highest to lowest
+        const firstCategory = categories[0];
+        if (firstCategory && firstCategory.clusters) {
+          // Sort clusters by total score (highest to lowest)
+          const allClusters = [...firstCategory.clusters].sort((a, b) => b.total - a.total);
+          report.sections[reportSection.sectionId].allClusters = allClusters;
+
+          // Also track individual top strengths for summary
+          const strengthAnswers = firstCategory.answers || [];
+          const strengthQuestions = testData.sections.find(s => s.sectionId === reportSection.sectionId)?.categories[0]?.questions || [];
+          const individualStrengths = strengthAnswers.map((score, idx) => ({
+            text: strengthQuestions[idx] || `Strength ${idx + 1}`,
+            score: score || 0,
+            index: idx
+          })).sort((a, b) => b.score - a.score);
+
+          report.sections[reportSection.sectionId].topStrengths = individualStrengths.slice(0, 3);
+        } else {
+          // If no clusters, just rank categories
+          const ranked = [...categories].sort((a, b) => b.total - a.total);
+          report.sections[reportSection.sectionId].ranked = ranked;
+        }
       } else if (reportSection.display === 'clusters') {
         // For cluster display, get clusters from first category
         const firstCategory = categories[0];
@@ -186,6 +213,23 @@ const Scoring = {
           })).sort((a, b) => b.score - a.score);
 
           report.sections[reportSection.sectionId].topStrengths = individualStrengths.slice(0, 3);
+        }
+      } else if (reportSection.display === 'grouped-thirds') {
+        // For grouped-thirds display (Section C): divide 9 items into top 3, mid 3, bottom 3
+        const firstCategory = categories[0];
+        if (firstCategory && firstCategory.clusters) {
+          const allClusters = [...firstCategory.clusters].sort((a, b) => b.total - a.total);
+          report.sections[reportSection.sectionId].topThird = allClusters.slice(0, 3);
+          report.sections[reportSection.sectionId].midThird = allClusters.slice(3, 6);
+          report.sections[reportSection.sectionId].bottomThird = allClusters.slice(6, 9);
+        }
+      } else if (reportSection.display === 'grouped-reverse') {
+        // For grouped-reverse display (Section D): first 3 = high growth need (low-clusters), last 3 = neutral
+        const firstCategory = categories[0];
+        if (firstCategory && firstCategory.clusters) {
+          const allClusters = [...firstCategory.clusters].sort((a, b) => b.total - a.total);
+          report.sections[reportSection.sectionId].highGrowth = allClusters.slice(0, 3);
+          report.sections[reportSection.sectionId].lowGrowth = allClusters.slice(3, 6);
         }
       } else if (reportSection.display === 'total-only') {
         const total = categories.reduce((sum, cat) => sum + cat.total, 0);

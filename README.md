@@ -9,14 +9,14 @@ A **100% static** multi-test career assessment platform that helps students disc
 - **💾 Progress Saving**: Automatic progress saving with localStorage (7-day TTL)
 - **📱 Responsive Design**: Mobile-friendly interface
 - **🎯 Multi-Test Support**: Easily add new assessments via JSON configuration files
-- **🔧 Debug Mode**: Built-in testing tools (Ctrl+Shift+D)
+- **🔧 Debug Mode**: Built-in testing tools (Ctrl+Shift+Z)
 - **🚀 Deploy Anywhere**: GitHub Pages, Netlify, Vercel, S3, any CDN
 - **⚡ Zero Configuration**: Works out of the box - no setup required
 
 ## Quick Start (30 seconds)
 
 1. **Open `test.html` in your browser** (even locally!)
-2. **Press Ctrl+Shift+D** to enable debug mode
+2. **Press Ctrl+Shift+Z** to enable debug mode
 3. **Click "Skip to Results"**
 4. **Click "Submit Results"**
 5. **Check email** at info@prolificdev.com
@@ -40,10 +40,12 @@ career_compass/
 │   ├── renderer.js            # Page rendering
 │   ├── scoring.js             # Score calculations
 │   ├── validator.js           # Input validation
-│   ├── storage.js             # localStorage management
-│   └── email-builder.js       # HTML email builder
+│   ├── storage.js             # localStorage & session management
+│   ├── dialog.js              # Modal dialogs
+│   └── dashboard.js           # Results dashboard
 └── tests/                      # Test definitions (JSON)
-    └── career-compass.json
+    ├── career-compass.json
+    └── career-readiness.json
 ```
 
 **That's all!** Pure static files - no backend required.
@@ -76,6 +78,8 @@ Just upload the files via FTP/SFTP. No special configuration needed!
 ## Documentation
 
 - **[QUICKSTART.md](QUICKSTART.md)** - Get started in 30 seconds
+- **[USER_GUIDE.md](USER_GUIDE.md)** - Simple guide for adding/editing tests (non-technical)
+- **[CONFIGURATION.md](CONFIGURATION.md)** - Configuration reference
 - **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)** - Technical implementation details
 - **[CLAUDE.md](CLAUDE.md)** - Codebase overview for AI assistants
 
@@ -83,7 +87,7 @@ Just upload the files via FTP/SFTP. No special configuration needed!
 
 ### Debug Mode
 
-Press **Ctrl+Shift+D** on the test page to access:
+Press **Ctrl+Shift+Z** on the test page to access:
 - Fill all answers with 3s (for quick testing)
 - Skip directly to results
 - Clear session
@@ -94,7 +98,7 @@ Press **Ctrl+Shift+D** on the test page to access:
 1. Visit `index.html`
 2. Click "Start Assessment"
 3. Fill in student details
-4. Use debug mode to skip questions (Ctrl+Shift+D → Skip to Results)
+4. Use debug mode to skip questions (Ctrl+Shift+Z → Skip to Results)
 5. Verify email is received at admin address
 
 ## Adding New Tests
@@ -123,14 +127,18 @@ Edit `js/config.js` to customize behavior:
 // Show results to user after completion (true) or skip to thank you (false)
 showResultsToUser: true
 
-// Include PDF attachment in email (true) or HTML only (false)
-generatePdf: true
+// Attach PDF to email (generated client-side using html2pdf.js)
+attachPdfReport: true
+
+// Store results locally for dashboard viewing
+storeResults: false
 ```
 
 **Default behavior:**
 - Results shown to user before completion
-- Email sent automatically with PDF attachment
+- Email sent automatically with PDF attachment (generated client-side)
 - Recipient configured on API server (info@prolificdev.com)
+- Results not stored locally (email only)
 
 ## Security Features
 

@@ -14,6 +14,11 @@ const Config = {
     fromName: 'CGA Global Reports'
   },
 
+  storage: {
+    apiUrl: 'api/storage.php',
+    accessKey: 'ae138a37c51dd863e0de53e8c15a0912b1025e9ae0e302aed233c4abfc289e64'
+  },
+
   /**
    * Show results to user after test completion
    * - true: Show results page with report before completion
@@ -25,11 +30,18 @@ const Config = {
   showResultsToUser: true,
 
   /**
-   * Generate PDF attachment for email
-   * - true: Mailer API will generate PDF from HTML and attach to email
-   * - false: Email will only contain HTML (no PDF attachment)
+   * Attach PDF report to email
+   * - true: Generate PDF client-side and attach to email
+   * - false: Send simple email without PDF attachment
    *
-   * Note: PDF generation is handled by the mailer API server.
+   * Note: PDF is generated in the browser using html2pdf.js
    */
-  generatePdf: true
+  attachPdfReport: true,
+
+  /**
+   * Store assessment results to file-based storage
+   * - true: Save results to storage API for dashboard viewing
+   * - false: Don't store results (only send email)
+   */
+  storeResults: false
 };

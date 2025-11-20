@@ -70,7 +70,7 @@ Created 5 modular JavaScript files:
    - Page navigation
    - Test loading and initialization
    - API submission
-   - **Debug mode** (Ctrl+Shift+D)
+   - **Debug mode** (Ctrl+Shift+Z)
 
 ### ✅ Phase 5: PHP API Backend (Simplified)
 
@@ -176,7 +176,7 @@ Created security measures:
 
 Built-in debug features:
 
-**Debug Mode** (Ctrl+Shift+D):
+**Debug Mode** (Ctrl+Shift+Z):
 - Fill all answers with 3s
 - Skip directly to results
 - Clear session
@@ -284,7 +284,7 @@ career_compass/
 - [ ] Upload all files to server
 - [ ] Set file permissions on data/ directories
 - [ ] Open test.html in browser
-- [ ] Press Ctrl+Shift+D for debug mode
+- [ ] Press Ctrl+Shift+Z for debug mode
 - [ ] Click "Skip to Results"
 - [ ] Click "Submit Results"
 - [ ] Check email at configured recipient address
@@ -307,7 +307,7 @@ career_compass/
 
 ### 🔧 Advanced Features
 
-- ✅ Debug mode for testing (Ctrl+Shift+D)
+- ✅ Debug mode for testing (Ctrl+Shift+Z)
 - ✅ Rate limiting (5 requests/hour)
 - ✅ CORS protection
 - ✅ Multiple scoring methods (sum, average, weighted, cluster)
@@ -363,7 +363,7 @@ career_compass/
 
 ## Debug Mode Instructions
 
-Press **Ctrl+Shift+D** on the test page to toggle debug panel.
+Press **Ctrl+Shift+Z** on the test page to toggle debug panel.
 
 **Available Actions:**
 - **Fill All Answers** - Sets all answers to 3
@@ -384,7 +384,7 @@ Press **Ctrl+Shift+D** on the test page to toggle debug panel.
 ### Quick Test (5 minutes)
 
 1. Open `test.html?test=career-compass`
-2. Press Ctrl+Shift+D
+2. Press Ctrl+Shift+Z
 3. Click "Skip to Results"
 4. Click "Submit Results"
 5. Check admin email

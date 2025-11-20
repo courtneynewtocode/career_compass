@@ -22,3 +22,6 @@ node_modules/
 # Build output (if using bundlers)
 dist/
 build/
+
+# AI Files
+CLAUDE.md

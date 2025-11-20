@@ -73,7 +73,7 @@ Just upload via FTP/SFTP:
 
 1. Visit your deployed URL
 2. Open `test.html`
-3. Press Ctrl+Shift+D (debug mode)
+3. Press Ctrl+Shift+Z (debug mode)
 4. Click "Skip to Results"
 5. Click "Submit Results"
 6. Check your email!
