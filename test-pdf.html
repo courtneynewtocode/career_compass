@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Test Generator</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/report.css">
+
+  <!-- html2pdf.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    body {
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+    .controls {
+      max-width: 600px;
+      margin: 0 auto 30px;
+      padding: 20px;
+      background: #f8feff;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .btn {
+      background: #0b8f8f;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 5px;
+    }
+    .btn:hover {
+      background: #0a7a7a;
+    }
+    #status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 5px;
+      display: none;
+    }
+    #status.success {
+      background: #d4edda;
+      color: #155724;
+      display: block;
+    }
+    #status.error {
+      background: #f8d7da;
+      color: #721c24;
+      display: block;
+    }
+    #status.info {
+      background: #d1ecf1;
+      color: #0c5460;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="controls">
+    <h1>PDF Test Generator</h1>
+    <p>Generate a sample assessment report with random data and download as PDF.</p>
+
+    <button class="btn" onclick="generateAndDownloadPdf()">Generate PDF</button>
+    <button class="btn" onclick="generateAndShowReport()">Show Report (No PDF)</button>
+
+    <div id="status"></div>
+  </div>
+
+  <div id="page-content"></div>
+
+  <!-- JavaScript -->
+  <script src="js/config.js"></script>
+  <script src="js/scoring.js"></script>
+  <script src="js/renderer.js"></script>
+
+  <script>
+    let testData = null;
+    let demographics = null;
+    let answers = null;
+    let scores = null;
+    let reportData = null;
+
+    // Load test data
+    async function loadTestData() {
+      const response = await fetch('tests/career-compass.json');
+      testData = await response.json();
+      console.log('✅ Test data loaded');
+    }
+
+    // Generate random demographics
+    function generateRandomDemographics() {
+      const firstNames = ['John', 'Sarah', 'Michael', 'Emma', 'David', 'Lisa', 'James', 'Maria'];
+      const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis'];
+
+      demographics = {
+        studentName: `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`,
+        age: Math.floor(Math.random() * 6) + 13, // 13-18
+        grade: String(Math.floor(Math.random() * 6) + 7), // 7-12
+        email: 'test@example.com',
+        contact: '+27 81 234 5678'
+      };
+
+      console.log('✅ Generated demographics:', demographics);
+    }
+
+    // Generate random answers
+    function generateRandomAnswers() {
+      answers = {};
+
+      testData.sections.forEach(section => {
+        const sectionAnswers = [];
+
+        section.categories.forEach(category => {
+          category.questions.forEach(() => {
+            // Generate random rating 1-5
+            sectionAnswers.push(Math.floor(Math.random() * 5) + 1);
+          });
+        });
+
+        answers[section.sectionId] = sectionAnswers;
+      });
+
+      console.log('✅ Generated answers:', answers);
+    }
+
+    // Calculate scores
+    function calculateScores() {
+      scores = Scoring.calculateScores(testData, answers);
+      reportData = Scoring.prepareReportData(testData, scores, demographics);
+
+      console.log('✅ Calculated scores:', scores);
+      console.log('✅ Generated report data:', reportData);
+    }
+
+    // Render the report
+    function renderReport() {
+      // Renderer.renderResults modifies the DOM directly
+      Renderer.renderResults(testData, reportData, {
+        onFinish: () => {
+          console.log('Finish button clicked');
+        }
+      });
+
+      console.log('✅ Report rendered');
+    }
+
+    // Generate PDF
+    async function generatePdf() {
+      showStatus('Generating PDF, please wait...', 'info');
+
+      const pageContent = document.getElementById('page-content');
+      const clone = pageContent.cloneNode(true);
+
+      // Add PDF-specific styling
+      const style = document.createElement('style');
+      style.textContent = `
+        /* Font sizes - extremely compact */
+        * {
+          font-size: 6px !important;
+          line-height: 1.1 !important;
+        }
+        h1 {
+          font-size: 12px !important;
+          margin: 3px 0 !important;
+        }
+        h2 {
+          font-size: 10px !important;
+          margin: 3px 0 !important;
+        }
+        h3 {
+          font-size: 9px !important;
+          margin: 10px 0 2px 0 !important;
+        }
+        h4 {
+          font-size: 7px !important;
+          margin: 2px 0 !important;
+        }
+        .small-muted, .muted {
+          font-size: 5px !important;
+        }
+        .btn {
+          display: none !important;
+        }
+
+        /* Make header/intro very compact */
+        .container {
+          margin-bottom: 3px !important;
+          min-height: auto !important;
+        }
+
+        /* Compact intro paragraphs */
+        #page-content > div:first-child p {
+          margin: 1px 0 !important;
+          font-size: 5px !important;
+          line-height: 1.1 !important;
+        }
+
+        /* Keep report content flowing */
+        .report {
+          margin-top: 2px !important;
+        }
+
+        /* Prevent page break after header */
+        .container, #page-content > div:first-child {
+          page-break-after: avoid !important;
+        }
+
+        /* Compact layout */
+        .two-col {
+          gap: 2px !important;
+        }
+        .metric {
+          padding: 2px !important;
+          margin-bottom: 1px !important;
+        }
+        .metric strong {
+          font-size: 7px !important;
+        }
+
+        /* Hide clusters image */
+        img[src*="clusters.png"] {
+          display: none !important;
+        }
+
+        /* Logo smaller */
+        img[alt="CGA Global"] {
+          max-width: 100px !important;
+        }
+
+        /* Compact sections */
+        .top-clusters, .neutral-clusters, .low-clusters {
+          margin-bottom: 2px !important;
+          padding: 3px !important;
+        }
+
+        /* Spacing */
+        .container {
+          margin-bottom: 3px !important;
+        }
+        p {
+          margin: 2px 0 !important;
+        }
+        ol, ul {
+          margin: 2px 0 !important;
+          padding-left: 10px !important;
+        }
+        li {
+          margin: 1px 0 !important;
+        }
+
+        /* Tables */
+        table {
+          margin: 3px 0 !important;
+        }
+        td, th {
+          padding: 2px !important;
+          font-size: 6px !important;
+        }
+
+        /* Boxes */
+        div[style*="background-color"] {
+          padding: 3px !important;
+          margin: 2px 0 !important;
+        }
+      `;
+      clone.insertBefore(style, clone.firstChild);
+
+      // Hide Report Summary section from PDF
+      const allH3 = clone.querySelectorAll('h3');
+      allH3.forEach((h3) => {
+        const sectionText = h3.textContent.toLowerCase();
+
+        // Hide Report Summary from PDF
+        if (sectionText.includes('report summary')) {
+          h3.style.display = 'none';
+          // Hide the table after it
+          let nextEl = h3.nextElementSibling;
+          while (nextEl) {
+            if (nextEl.tagName === 'TABLE') {
+              nextEl.style.display = 'none';
+              break;
+            }
+            nextEl = nextEl.nextElementSibling;
+          }
+          console.log('✅ Hidden Report Summary from PDF');
+        }
+      });
+
+      const options = {
+        margin: [5, 5, 5, 5],
+        filename: `Test_Report_${Date.now()}.pdf`,
+        image: {
+          type: 'jpeg',
+          quality: 0.95
+        },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          windowHeight: 4000
+        },
+        jsPDF: {
+          unit: 'mm',
+          format: 'a4',
+          orientation: 'portrait',
+          compress: true
+        },
+        pagebreak: {
+          mode: ['avoid-all', 'css', 'legacy']
+        }
+      };
+
+      try {
+        await html2pdf()
+          .set(options)
+          .from(clone)
+          .save();
+
+        showStatus('PDF downloaded successfully!', 'success');
+        console.log('✅ PDF generated and downloaded');
+      } catch (error) {
+        showStatus('Error generating PDF: ' + error.message, 'error');
+        console.error('❌ PDF generation error:', error);
+      }
+    }
+
+    // Show status message
+    function showStatus(message, type) {
+      const status = document.getElementById('status');
+      status.textContent = message;
+      status.className = type;
+    }
+
+    // Main function: Generate and download PDF
+    async function generateAndDownloadPdf() {
+      try {
+        showStatus('Loading test data...', 'info');
+        await loadTestData();
+
+        showStatus('Generating random data...', 'info');
+        generateRandomDemographics();
+        generateRandomAnswers();
+        calculateScores();
+
+        showStatus('Rendering report...', 'info');
+        renderReport();
+
+        // Wait a moment for rendering to complete
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Generate PDF
+        await generatePdf();
+
+      } catch (error) {
+        showStatus('Error: ' + error.message, 'error');
+        console.error('❌ Error:', error);
+      }
+    }
+
+    // Show report without PDF
+    async function generateAndShowReport() {
+      try {
+        showStatus('Loading test data...', 'info');
+        await loadTestData();
+
+        showStatus('Generating random data...', 'info');
+        generateRandomDemographics();
+        generateRandomAnswers();
+        calculateScores();
+
+        showStatus('Rendering report...', 'info');
+        renderReport();
+
+        showStatus('Report rendered! Scroll down to view.', 'success');
+
+      } catch (error) {
+        showStatus('Error: ' + error.message, 'error');
+        console.error('❌ Error:', error);
+      }
+    }
+  </script>
+
+</body>
+</html>

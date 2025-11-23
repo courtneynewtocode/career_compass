@@ -139,6 +139,14 @@ class CareerCompassApp {
    */
   async showResumeDialog(session) {
     const percent = Math.round(((session.currentPage + 1) / (this.pages.length + 1)) * 100);
+
+    // Don't show resume dialog if no actual progress (0% or still on intro page)
+    if (percent === 0 || session.currentPage === -1) {
+      Storage.clearSession(this.testId);
+      this.startFresh();
+      return;
+    }
+
     const studentName = session.demographics.studentName || 'Unknown';
 
     const resume = await Dialog.showConfirm(
@@ -333,11 +341,13 @@ class CareerCompassApp {
       if (Config.attachPdfReport) {
         console.log('📄 Generating PDF attachment...');
 
+        // Wait a moment for DOM rendering to settle
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
         const pdfBlob = await this.generatePdfBlob();
         const pdfFilename = `${studentName.replace(/[^a-zA-Z0-9]/g, '_')}_${this.testData.testName.replace(/[^a-zA-Z0-9]/g, '_')}_Report.pdf`;
 
         formData.append('attachment', pdfBlob, pdfFilename);
-
         console.log('✅ PDF attached:', pdfFilename);
       }
 
@@ -620,19 +630,14 @@ class CareerCompassApp {
         }
         h2 {
           font-size: 10px !important;
-          page-break-after: avoid !important;
-          page-break-inside: avoid !important;
           margin: 3px 0 !important;
         }
         h3 {
           font-size: 9px !important;
-          page-break-after: avoid !important;
-          page-break-inside: avoid !important;
-          margin: 4px 0 2px 0 !important;
+          margin: 8px 0 2px 0 !important;
         }
         h4 {
           font-size: 7px !important;
-          page-break-after: avoid !important;
           margin: 2px 0 !important;
         }
         .small-muted, .muted {
@@ -642,13 +647,30 @@ class CareerCompassApp {
           display: none !important;
         }
 
+        /* Make header/intro very compact */
+        .container {
+          margin-bottom: 3px !important;
+          min-height: auto !important;
+        }
+
+        /* Compact intro paragraphs */
+        #page-content > div:first-child p {
+          margin: 1px 0 !important;
+          font-size: 5px !important;
+          line-height: 1.1 !important;
+        }
+
+        /* Keep report content flowing */
+        .report {
+          margin-top: 2px !important;
+        }
+
         /* Compact student details section */
         .two-col {
           page-break-inside: avoid !important;
           gap: 2px !important;
         }
         .metric {
-          page-break-inside: avoid !important;
           padding: 2px !important;
           margin-bottom: 1px !important;
         }
@@ -670,18 +692,6 @@ class CareerCompassApp {
         img:not([alt="CGA Global"]):not([src*="clusters.png"]) {
           max-width: 50% !important;
           height: auto !important;
-        }
-
-        /* Page break control - keep sections together */
-        .top-clusters, .neutral-clusters, .low-clusters {
-          page-break-inside: avoid !important;
-          margin-bottom: 2px !important;
-          padding: 3px !important;
-        }
-
-        /* Keep section content together */
-        h3 + div, h3 + p {
-          page-break-before: avoid !important;
         }
 
         /* Spacing adjustments for PDF - extremely compact */
@@ -725,43 +735,27 @@ class CareerCompassApp {
       `;
       clone.insertBefore(style, clone.firstChild);
 
-      // Don't force page breaks - let natural flow work
-      // Just ensure sections are kept together and Report Summary is visible
+      // Hide Report Summary section from PDF
       const allH3 = clone.querySelectorAll('h3');
-      let foundReportSummary = false;
 
       allH3.forEach((h3) => {
         const sectionText = h3.textContent.toLowerCase();
 
-        // Keep sections together - avoid breaking in the middle
-        h3.style.pageBreakInside = 'avoid';
-        h3.style.pageBreakAfter = 'avoid';
-
-        // Ensure Report Summary is visible
+        // Hide Report Summary from PDF
         if (sectionText.includes('report summary')) {
-          foundReportSummary = true;
-          console.log('✅ Found Report Summary in PDF content');
-          h3.style.display = 'block';
-          h3.style.visibility = 'visible';
-          h3.style.marginTop = '20px';
-
-          // Make sure the table after it is visible
+          h3.style.display = 'none';
+          // Hide the table after it
           let nextEl = h3.nextElementSibling;
           while (nextEl) {
             if (nextEl.tagName === 'TABLE') {
-              nextEl.style.display = 'table';
-              nextEl.style.visibility = 'visible';
-              console.log('✅ Made Report Summary table visible');
+              nextEl.style.display = 'none';
               break;
             }
             nextEl = nextEl.nextElementSibling;
           }
+          console.log('✅ Hidden Report Summary from PDF');
         }
       });
-
-      if (!foundReportSummary) {
-        console.warn('⚠️ Report Summary NOT found in PDF content!');
-      }
 
       console.log('📊 Total sections in PDF:', allH3.length);
 
@@ -787,9 +781,6 @@ class CareerCompassApp {
           orientation: 'portrait',
           compress: true
         },
-        pagebreak: {
-          mode: ['avoid-all', 'css', 'legacy']
-        }
       };
 
       // Generate PDF and get blob
