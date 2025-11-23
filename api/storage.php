@@ -96,7 +96,7 @@ function handleSave($request) {
 
     // Generate unique ID
     $timestamp = microtime(true);
-    $id = date('Y-m-d_His', $timestamp) . '_' . uniqid();
+    $id = date('Y-m-d_His', (int)$timestamp) . '_' . uniqid();
 
     // Add ID to data
     $data['id'] = $id;

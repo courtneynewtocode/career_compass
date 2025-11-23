@@ -33,69 +33,66 @@ RUN mkdir -p /var/www/html/data/results \
     && chmod -R 755 /var/www/html/data
 
 # Configure Apache
-COPY <<EOF /etc/apache2/sites-available/000-default.conf
-<VirtualHost *:80>
-    ServerAdmin webmaster@localhost
-    DocumentRoot /var/www/html
-
-    <Directory /var/www/html>
-        Options -Indexes +FollowSymLinks
-        AllowOverride All
-        Require all granted
-    </Directory>
-
-    # Security headers
-    Header set X-Content-Type-Options "nosniff"
-    Header set X-Frame-Options "SAMEORIGIN"
-    Header set X-XSS-Protection "1; mode=block"
-    Header set Referrer-Policy "strict-origin-when-cross-origin"
-
-    # Cache control for static assets
-    <FilesMatch "\.(css|js|jpg|jpeg|png|gif|ico|svg|woff|woff2|ttf|eot)$">
-        Header set Cache-Control "max-age=31536000, public"
-    </FilesMatch>
-
-    # Disable caching for HTML and PHP
-    <FilesMatch "\.(html|htm|php)$">
-        Header set Cache-Control "no-cache, no-store, must-revalidate"
-        Header set Pragma "no-cache"
-        Header set Expires "0"
-    </FilesMatch>
-
-    ErrorLog \${APACHE_LOG_DIR}/error.log
-    CustomLog \${APACHE_LOG_DIR}/access.log combined
-</VirtualHost>
-EOF
+RUN echo '<VirtualHost *:80>\n\
+    ServerAdmin webmaster@localhost\n\
+    ServerName localhost\n\
+    DocumentRoot /var/www/html\n\
+\n\
+    <Directory /var/www/html>\n\
+        Options -Indexes +FollowSymLinks\n\
+        AllowOverride All\n\
+        Require all granted\n\
+    </Directory>\n\
+\n\
+    # Security headers\n\
+    Header set X-Content-Type-Options "nosniff"\n\
+    Header set X-Frame-Options "SAMEORIGIN"\n\
+    Header set X-XSS-Protection "1; mode=block"\n\
+    Header set Referrer-Policy "strict-origin-when-cross-origin"\n\
+\n\
+    # Cache control for static assets\n\
+    <FilesMatch "\\.(css|js|jpg|jpeg|png|gif|ico|svg|woff|woff2|ttf|eot)$">\n\
+        Header set Cache-Control "max-age=31536000, public"\n\
+    </FilesMatch>\n\
+\n\
+    # Disable caching for HTML and PHP\n\
+    <FilesMatch "\\.(html|htm|php)$">\n\
+        Header set Cache-Control "no-cache, no-store, must-revalidate"\n\
+        Header set Pragma "no-cache"\n\
+        Header set Expires "0"\n\
+    </FilesMatch>\n\
+\n\
+    ErrorLog ${APACHE_LOG_DIR}/error.log\n\
+    CustomLog ${APACHE_LOG_DIR}/access.log combined\n\
+</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
 # Create .htaccess for additional security and routing
-COPY <<EOF /var/www/html/.htaccess
-# Enable rewrite engine
-RewriteEngine On
-
-# Force HTTPS (if SSL is configured)
-# RewriteCond %{HTTPS} off
-# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-
-# Prevent directory listing
-Options -Indexes
-
-# Protect sensitive files
-<FilesMatch "^\.">
-    Order allow,deny
-    Deny from all
-</FilesMatch>
-
-# Protect JSON test files from direct access (optional)
-# <FilesMatch "\.json$">
-#     Order allow,deny
-#     Deny from all
-# </FilesMatch>
-
-# GZIP Compression
-<IfModule mod_deflate.c>
-    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
-</IfModule>
-EOF
+RUN echo '# Enable rewrite engine\n\
+RewriteEngine On\n\
+\n\
+# Force HTTPS (if SSL is configured)\n\
+# RewriteCond %{HTTPS} off\n\
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]\n\
+\n\
+# Prevent directory listing\n\
+Options -Indexes\n\
+\n\
+# Protect sensitive files\n\
+<FilesMatch "^\\.">\\n\
+    Order allow,deny\n\
+    Deny from all\n\
+</FilesMatch>\n\
+\n\
+# Protect JSON test files from direct access (optional)\n\
+# <FilesMatch "\\.json$">\n\
+#     Order allow,deny\n\
+#     Deny from all\n\
+# </FilesMatch>\n\
+\n\
+# GZIP Compression\n\
+<IfModule mod_deflate.c>\n\
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json\n\
+</IfModule>' > /var/www/html/.htaccess
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html \
