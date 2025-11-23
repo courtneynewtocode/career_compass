@@ -19,11 +19,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 // Configuration
 define('STORAGE_DIR', __DIR__ . '/../data/results');
+define('ANALYTICS_DIR', __DIR__ . '/../data/analytics');
 define('ACCESS_KEY', 'ae138a37c51dd863e0de53e8c15a0912b1025e9ae0e302aed233c4abfc289e64');
 
-// Ensure storage directory exists
+// Ensure storage directories exist
 if (!file_exists(STORAGE_DIR)) {
     mkdir(STORAGE_DIR, 0755, true);
+}
+
+if (!file_exists(ANALYTICS_DIR)) {
+    mkdir(ANALYTICS_DIR, 0755, true);
 }
 
 // Get request data
@@ -58,6 +63,14 @@ try {
 
         case 'delete':
             handleDelete($request);
+            break;
+
+        case 'track_event':
+            handleTrackEvent($request);
+            break;
+
+        case 'get_analytics':
+            handleGetAnalytics($request);
             break;
 
         default:
@@ -200,4 +213,122 @@ function sanitizeFilename($string) {
     // Limit length
     $string = substr($string, 0, 50);
     return $string;
+}
+
+/**
+ * Track analytics event
+ */
+function handleTrackEvent($request) {
+    if (!isset($request['event'])) {
+        throw new Exception('No event data provided');
+    }
+
+    $event = $request['event'];
+    $sessionId = $event['sessionId'] ?? 'unknown';
+    $testId = $event['testId'] ?? 'unknown';
+    $eventName = $event['eventName'] ?? 'unknown';
+
+    // Create filename: date + testId + sessionId + eventName
+    $date = date('Y-m-d');
+    $timestamp = microtime(true);
+    $filename = "{$date}_{$testId}_{$eventName}_{$sessionId}_{$timestamp}.json";
+    $filepath = ANALYTICS_DIR . '/' . $filename;
+
+    // Save event to file
+    $json = json_encode($event, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    if (file_put_contents($filepath, $json) === false) {
+        throw new Exception('Failed to save analytics event');
+    }
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'Event tracked successfully'
+    ]);
+}
+
+/**
+ * Get analytics summary
+ */
+function handleGetAnalytics($request) {
+    $files = glob(ANALYTICS_DIR . '/*.json');
+    $events = [];
+
+    foreach ($files as $file) {
+        $content = file_get_contents($file);
+        $event = json_decode($content, true);
+
+        if ($event) {
+            $events[] = $event;
+        }
+    }
+
+    // Group events by type for statistics
+    $stats = [
+        'total_events' => count($events),
+        'test_started' => 0,
+        'test_completed' => 0,
+        'test_abandoned' => 0,
+        'email_sent_success' => 0,
+        'email_sent_failure' => 0,
+        'unique_sessions' => [],
+        'by_test' => []
+    ];
+
+    foreach ($events as $event) {
+        $eventName = $event['eventName'] ?? 'unknown';
+        $sessionId = $event['sessionId'] ?? 'unknown';
+        $testId = $event['testId'] ?? 'unknown';
+
+        // Count unique sessions
+        if (!in_array($sessionId, $stats['unique_sessions'])) {
+            $stats['unique_sessions'][] = $sessionId;
+        }
+
+        // Count by test
+        if (!isset($stats['by_test'][$testId])) {
+            $stats['by_test'][$testId] = [
+                'started' => 0,
+                'completed' => 0,
+                'abandoned' => 0
+            ];
+        }
+
+        // Count event types
+        switch ($eventName) {
+            case 'test_started':
+                $stats['test_started']++;
+                $stats['by_test'][$testId]['started']++;
+                break;
+            case 'test_completed':
+                $stats['test_completed']++;
+                $stats['by_test'][$testId]['completed']++;
+                break;
+            case 'test_abandoned':
+                $stats['test_abandoned']++;
+                $stats['by_test'][$testId]['abandoned']++;
+                break;
+            case 'email_sent':
+                if ($event['data']['success'] ?? false) {
+                    $stats['email_sent_success']++;
+                } else {
+                    $stats['email_sent_failure']++;
+                }
+                break;
+        }
+    }
+
+    // Calculate completion rate
+    $stats['completion_rate'] = $stats['test_started'] > 0
+        ? round(($stats['test_completed'] / $stats['test_started']) * 100, 2)
+        : 0;
+
+    // Count unique sessions
+    $stats['unique_sessions_count'] = count($stats['unique_sessions']);
+    unset($stats['unique_sessions']); // Remove array, keep only count
+
+    echo json_encode([
+        'success' => true,
+        'stats' => $stats,
+        'recent_events' => array_slice(array_reverse($events), 0, 50) // Last 50 events
+    ]);
 }

@@ -43,5 +43,22 @@ const Config = {
    * - true: Save results to storage API for dashboard viewing
    * - false: Don't store results (only send email)
    */
-  storeResults: false
+  storeResults: true,
+
+  /**
+   * Dashboard Configuration
+   */
+  dashboard: {
+    /**
+     * Dashboard password
+     * Change this to a secure password for production!
+     */
+    password: 'admin123',
+
+    /**
+     * Enable authentication
+     * Set to false to disable password protection (not recommended)
+     */
+    requireAuth: true
+  }
 };

@@ -25,3 +25,24 @@ build/
 
 # AI Files
 CLAUDE.md
+
+# Data directories (runtime data should not be in git)
+data/results/
+data/analytics/
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Docker volumes
+docker-volumes/
+
+# Logs
+*.log
+logs/
+
+# Backups
+backups/
+*.tar.gz
+*.zip

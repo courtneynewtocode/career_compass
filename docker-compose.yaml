@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  career-compass:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: career-compass-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:80"
+    volumes:
+      # Mount data directory for persistent storage
+      - ./data:/var/www/html/data:rw
+      # Mount entire app for development (comment out for production)
+      # - .:/var/www/html:rw
+    environment:
+      # PHP Configuration
+      - PHP_UPLOAD_MAX_FILESIZE=20M
+      - PHP_POST_MAX_SIZE=20M
+      - PHP_MAX_EXECUTION_TIME=300
+      # Apache Configuration
+      - APACHE_RUN_USER=www-data
+      - APACHE_RUN_GROUP=www-data
+      - APACHE_LOG_DIR=/var/log/apache2
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.career-compass.rule=Host(`${DOMAIN:-localhost}`)"
+      - "traefik.http.routers.career-compass.entrypoints=web"
+      # Uncomment for HTTPS with Traefik
+      # - "traefik.http.routers.career-compass-secure.rule=Host(`${DOMAIN}`)"
+      # - "traefik.http.routers.career-compass-secure.entrypoints=websecure"
+      # - "traefik.http.routers.career-compass-secure.tls.certresolver=letsencrypt"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - career-compass-network
+
+  # Optional: Nginx reverse proxy (if not using Traefik)
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: career-compass-nginx
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./ssl:/etc/nginx/ssl:ro
+  #   depends_on:
+  #     - career-compass
+  #   networks:
+  #     - career-compass-network
+
+networks:
+  career-compass-network:
+    driver: bridge
+
+volumes:
+  data:
+    driver: local

@@ -250,15 +250,39 @@
   <header style="background: white; box-shadow: 0 2px 8px rgba(11, 143, 143, 0.08); padding: 16px 20px; margin-bottom: 30px;">
     <div style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
       <h1 style="margin: 0; font-size: 24px; color: var(--accent);">📊 Assessment Results Dashboard</h1>
-      <a href="index.html" class="btn secondary" style="text-decoration: none;">← Back to Home</a>
+      <div style="display: flex; gap: 12px;">
+        <button onclick="Dashboard.refreshData()" class="btn secondary" style="text-decoration: none;">🔄 Refresh</button>
+        <a href="index.html" class="btn secondary" style="text-decoration: none;">← Back to Home</a>
+        <button onclick="DashboardAuth.logout()" class="btn secondary" style="text-decoration: none;">🔒 Logout</button>
+      </div>
     </div>
   </header>
 
   <div class="dashboard-container">
-    <!-- Stats Overview -->
-    <div class="stats-grid" id="stats-grid">
+    <!-- Analytics Overview -->
+    <div class="stats-grid" id="analytics-stats">
       <div class="stat-card">
-        <div class="stat-label">Total Assessments</div>
+        <div class="stat-label">Total Started</div>
+        <div class="stat-value" id="analytics-started">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Completed</div>
+        <div class="stat-value" id="analytics-completed">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Completion Rate</div>
+        <div class="stat-value" id="analytics-completion-rate">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Email Success</div>
+        <div class="stat-value" id="analytics-email-success">-</div>
+      </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="stats-grid" id="stats-grid" style="margin-top: 20px;">
+      <div class="stat-card">
+        <div class="stat-label">Total Results</div>
         <div class="stat-value" id="stat-total">-</div>
       </div>
       <div class="stat-card">
@@ -345,6 +369,18 @@
   <script src="js/dialog.js"></script>
   <script src="js/scoring.js"></script>
   <script src="js/renderer.js"></script>
+  <script src="js/dashboard-auth.js"></script>
   <script src="js/dashboard.js"></script>
+
+  <!-- Initialize Authentication -->
+  <script>
+    // Require authentication before loading dashboard
+    if (Config.dashboard?.requireAuth && !DashboardAuth.requireAuth()) {
+      // Login form will be shown, stop execution
+    } else {
+      // User is authenticated or auth is disabled, load dashboard normally
+      console.log('✅ Dashboard access granted');
+    }
+  </script>
 </body>
 </html>

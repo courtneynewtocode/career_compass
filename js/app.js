@@ -24,6 +24,20 @@ class CareerCompassApp {
     this.testId = testId;
 
     try {
+      // Show loading state
+      Loading.show('Loading assessment...', 'Please wait');
+
+      // Check localStorage availability
+      const storageCheck = ErrorHandler.checkLocalStorage();
+      if (!storageCheck.available) {
+        Loading.hide();
+        await Dialog.showAlert(
+          `<strong>Storage Not Available</strong><br><br>${storageCheck.error}<br><br>` +
+          'You can still complete the assessment, but your progress won\'t be saved if you leave the page.',
+          'Warning'
+        );
+      }
+
       // Load test definition
       this.testData = await this.loadTest(testId);
 
@@ -31,6 +45,7 @@ class CareerCompassApp {
       const validation = Validator.validateTestSchema(this.testData);
       if (!validation.valid) {
         console.error('Test validation errors:', validation.errors);
+        Loading.hide();
         await Dialog.showAlert(
           'There was a problem loading this assessment. Please contact your assessment coordinator for assistance.',
           'Configuration Error'
@@ -38,21 +53,31 @@ class CareerCompassApp {
         return;
       }
 
+      // Initialize analytics
+      Analytics.init(testId);
+
       // Initialize answers structure
       this.initializeAnswers();
 
       // Build page structure
       this.buildPages();
 
+      // Setup unsaved changes warning
+      this.setupUnsavedChangesWarning();
+
       // Check for existing session
       const session = Storage.loadSession(testId);
       if (session) {
+        Loading.hide();
         this.showResumeDialog(session);
       } else {
+        Loading.hide();
         this.startFresh();
       }
     } catch (error) {
       console.error('Error initializing app:', error);
+      Analytics.trackError('init_error', error.message, { testId });
+      Loading.hide();
       await Dialog.showAlert(
         'Unable to load the assessment. Please refresh the page and try again. If the problem persists, contact your assessment coordinator.',
         'Loading Error'
@@ -194,6 +219,40 @@ class CareerCompassApp {
   }
 
   /**
+   * Setup unsaved changes warning
+   */
+  setupUnsavedChangesWarning() {
+    this.hasUnsavedChanges = false;
+
+    // Warn user before leaving if assessment is in progress
+    window.addEventListener('beforeunload', (e) => {
+      // Don't warn if assessment is completed or not started
+      if (this.currentPage === -1 || this.currentPage >= this.pages.length) {
+        return;
+      }
+
+      // Don't warn if no answers yet
+      const hasAnswers = Object.values(this.answers).some(arr =>
+        arr.some(answer => answer !== null)
+      );
+
+      if (!hasAnswers) {
+        return;
+      }
+
+      // Show warning
+      const message = 'You have an assessment in progress. Your answers have been saved automatically, but are you sure you want to leave?';
+      e.preventDefault();
+      e.returnValue = message;
+
+      // Track abandonment
+      Analytics.trackTestAbandoned(this.currentPage, this.pages.length);
+
+      return message;
+    });
+  }
+
+  /**
    * Save current state to localStorage
    */
   saveState() {
@@ -210,6 +269,14 @@ class CareerCompassApp {
    */
   renderIntro() {
     this.currentPage = -1;
+
+    // Track page view
+    Analytics.trackPageView(-1, 'intro');
+
+    // Fade in the page
+    const pageContent = document.getElementById('page-content');
+    Loading.fadeIn(pageContent);
+
     Renderer.renderIntro(this.testData, this.demographics, {
       onStart: (demo) => {
         this.demographics = demo;
@@ -225,6 +292,13 @@ class CareerCompassApp {
   renderPage(index) {
     this.currentPage = index;
     this.saveState();
+
+    // Track page view
+    Analytics.trackPageView(index, 'question');
+
+    // Fade in the page
+    const pageContent = document.getElementById('page-content');
+    Loading.fadeIn(pageContent);
 
     Renderer.renderQuestionPage(
       this.testData,
@@ -256,6 +330,9 @@ class CareerCompassApp {
   async renderResults() {
     this.currentPage = this.pages.length;
 
+    // Show loading while calculating scores
+    Loading.show('Calculating results...', 'Please wait');
+
     // Calculate scores
     const scores = Scoring.calculateScores(this.testData, this.answers);
 
@@ -265,6 +342,12 @@ class CareerCompassApp {
     // Store for submission
     this.reportData = reportData;
     this.scores = scores;
+
+    // Track test completion
+    Analytics.trackTestCompleted(this.demographics, scores);
+    Analytics.trackPageView(this.pages.length, 'results');
+
+    Loading.hide();
 
     if (Config.showResultsToUser) {
       // Show results to user
@@ -325,6 +408,8 @@ class CareerCompassApp {
     console.log('📧 Attempting to send email report...');
 
     try {
+      Loading.show('Sending results...', 'Please wait while we process your submission');
+
       const studentName = this.demographics.studentName || 'Unknown Student';
       const emailSubject = `${this.testData.testName} Results - ${studentName}`;
 
@@ -355,31 +440,65 @@ class CareerCompassApp {
       console.log('📋 Subject:', emailSubject);
       console.log('📎 PDF attachment:', Config.attachPdfReport);
 
-      const emailResponse = await fetch(Config.mailer.apiUrl, {
-        method: 'POST',
-        body: formData  // Note: No Content-Type header - browser sets it automatically with boundary
+      // Use retry mechanism for email sending
+      const emailResult = await ErrorHandler.retryApiCall(async () => {
+        const response = await fetch(Config.mailer.apiUrl, {
+          method: 'POST',
+          body: formData
+        });
+
+        console.log('📥 API response status:', response.status);
+
+        const result = await response.json();
+        console.log('📥 API response:', result);
+
+        if (!result.success) {
+          throw new Error(result.message || 'Email API returned failure');
+        }
+
+        return result;
+      }, {
+        maxRetries: 3,
+        initialDelay: 2000,
+        onRetry: (attempt, maxRetries, delay) => {
+          console.log(`⚠️ Email attempt ${attempt}/${maxRetries} failed. Retrying in ${delay}ms...`);
+          Loading.show('Sending results...', `Retrying (${attempt}/${maxRetries})...`);
+        }
       });
 
-      console.log('📥 API response status:', emailResponse.status);
-
-      const emailResult = await emailResponse.json();
-      console.log('📥 API response:', emailResult);
-
-      if (!emailResult.success) {
-        throw new Error('Failed to send email: ' + (emailResult.message || 'Unknown error'));
-      }
-
       console.log('✅ Email sent successfully!');
+      Loading.hide();
+
+      // Track successful email
+      Analytics.trackEmailSent(true);
 
     } catch (error) {
       console.error('❌ Email sending error:', error);
-      // Don't block user flow - log error but continue
-      // Admin will need to check logs if emails aren't received
-      await Dialog.showAlert(
-        '<strong>Note:</strong> There was an issue sending the email report.<br><br>' +
-        'Don\'t worry! Your results have been recorded. Your assessment coordinator will be notified and will contact you shortly.',
-        'Email Notification'
+      Loading.hide();
+
+      // Track failed email
+      Analytics.trackEmailSent(false, error.message);
+
+      // Show user-friendly error with retry option
+      const retry = await Dialog.showConfirm(
+        '<strong>Email Delivery Issue</strong><br><br>' +
+        'There was a problem sending your results via email. This could be due to a network issue.<br><br>' +
+        'Would you like to try sending again?',
+        'Email Error',
+        { confirmText: 'Retry', cancelText: 'Continue Anyway' }
       );
+
+      if (retry) {
+        // Retry sending email
+        return await this.sendEmailReport();
+      } else {
+        // Continue without email
+        await Dialog.showAlert(
+          '<strong>Results Saved</strong><br><br>' +
+          'Your results have been saved locally. Please contact your assessment coordinator to retrieve your results manually.',
+          'Important'
+        );
+      }
     }
   }
 
@@ -606,6 +725,10 @@ class CareerCompassApp {
     console.log('📄 Generating PDF from report...');
 
     try {
+      // Load PDF library if not already loaded
+      Loading.show('Preparing PDF...', 'This may take a moment');
+      await PdfLoader.load();
+
       // Get the full page content (includes header with logo + report)
       const pageContent = document.getElementById('page-content');
 
@@ -783,18 +906,18 @@ class CareerCompassApp {
         },
       };
 
-      // Generate PDF and get blob
-      const pdfBlob = await html2pdf()
-        .set(options)
-        .from(clone)
-        .outputPdf('blob');
+      // Generate PDF using lazy-loaded library
+      const pdfBlob = await PdfLoader.generatePdf(clone, options);
 
       console.log('✅ PDF generated successfully, size:', Math.round(pdfBlob.size / 1024), 'KB');
 
+      Loading.hide();
       return pdfBlob;
 
     } catch (error) {
       console.error('❌ PDF generation error:', error);
+      Loading.hide();
+      Analytics.trackError('pdf_generation_error', error.message);
       throw error;
     }
   }

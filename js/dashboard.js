@@ -13,13 +13,17 @@ const Dashboard = {
   async init() {
     console.log('🚀 Initializing dashboard...');
 
-    // Load results
-    await this.loadResults();
+    // Load analytics and results in parallel
+    await Promise.all([
+      this.loadAnalytics(),
+      this.loadResults()
+    ]);
 
     // Setup event listeners
     this.setupEventListeners();
 
     // Initial render
+    this.renderAnalyticsStats();
     this.renderStats();
     this.renderResults();
   },
@@ -86,6 +90,84 @@ const Dashboard = {
   },
 
   /**
+   * Load analytics from storage API
+   */
+  async loadAnalytics() {
+    try {
+      console.log('📊 Fetching analytics from storage API...');
+
+      const response = await fetch(Config.storage.apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          access_key: Config.storage.accessKey,
+          action: 'get_analytics'
+        })
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error('Failed to load analytics: ' + (result.message || 'Unknown error'));
+      }
+
+      this.analytics = result.stats || {};
+      console.log('✅ Analytics loaded successfully');
+
+    } catch (error) {
+      console.error('❌ Error loading analytics:', error);
+      this.analytics = {
+        test_started: 0,
+        test_completed: 0,
+        completion_rate: 0,
+        email_sent_success: 0,
+        email_sent_failure: 0
+      };
+    }
+  },
+
+  /**
+   * Render analytics stats cards
+   */
+  renderAnalyticsStats() {
+    if (!this.analytics) return;
+
+    const started = this.analytics.test_started || 0;
+    const completed = this.analytics.test_completed || 0;
+    const completionRate = this.analytics.completion_rate || 0;
+    const emailSuccess = this.analytics.email_sent_success || 0;
+    const emailTotal = emailSuccess + (this.analytics.email_sent_failure || 0);
+    const emailRate = emailTotal > 0 ? Math.round((emailSuccess / emailTotal) * 100) : 0;
+
+    document.getElementById('analytics-started').textContent = started;
+    document.getElementById('analytics-completed').textContent = completed;
+    document.getElementById('analytics-completion-rate').textContent = `${completionRate}%`;
+    document.getElementById('analytics-email-success').textContent = `${emailRate}%`;
+
+    // Color code completion rate
+    const rateElement = document.getElementById('analytics-completion-rate');
+    if (completionRate >= 80) {
+      rateElement.style.color = '#16a34a'; // Green
+    } else if (completionRate >= 50) {
+      rateElement.style.color = '#f59e0b'; // Orange
+    } else {
+      rateElement.style.color = '#ef4444'; // Red
+    }
+
+    // Color code email success rate
+    const emailElement = document.getElementById('analytics-email-success');
+    if (emailRate >= 95) {
+      emailElement.style.color = '#16a34a'; // Green
+    } else if (emailRate >= 80) {
+      emailElement.style.color = '#f59e0b'; // Orange
+    } else {
+      emailElement.style.color = '#ef4444'; // Red
+    }
+  },
+
+  /**
    * Refresh data
    */
   async refreshData() {
@@ -93,7 +175,12 @@ const Dashboard = {
     document.getElementById('results-table').style.display = 'none';
     document.getElementById('empty-state').style.display = 'none';
 
-    await this.loadResults();
+    await Promise.all([
+      this.loadAnalytics(),
+      this.loadResults()
+    ]);
+
+    this.renderAnalyticsStats();
     this.renderStats();
     this.renderResults();
   },
@@ -154,7 +241,6 @@ const Dashboard = {
   renderStats() {
     const total = this.allResults.length;
     const compassCount = this.allResults.filter(r => r.testId === 'career-compass').length;
-    const readinessCount = this.allResults.filter(r => r.testId === 'career-readiness').length;
 
     // Count results from last 7 days
     const sevenDaysAgo = new Date();
@@ -163,7 +249,6 @@ const Dashboard = {
 
     document.getElementById('stat-total').textContent = total;
     document.getElementById('stat-compass').textContent = compassCount;
-    document.getElementById('stat-readiness').textContent = readinessCount;
     document.getElementById('stat-recent').textContent = recentCount;
   },
 
