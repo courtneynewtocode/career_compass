@@ -456,8 +456,8 @@ class CareerCompassApp {
       formData.append('subject', emailSubject);
       formData.append('html', emailBody);
 
-      // Generate and attach PDF if enabled
-      if (Config.attachPdfReport) {
+      // Generate and attach PDF if enabled AND response is valid (not fraud)
+      if (Config.attachPdfReport && this.isValidResponse !== false) {
         console.log('📄 Generating PDF attachment...');
 
         // Wait a moment for DOM rendering to settle
@@ -468,6 +468,8 @@ class CareerCompassApp {
 
         formData.append('attachment', pdfBlob, pdfFilename);
         console.log('✅ PDF attached:', pdfFilename);
+      } else if (this.isValidResponse === false) {
+        console.log('⚠️ Skipping PDF generation - invalid response pattern detected');
       }
 
       console.log('📤 Sending to API:', Config.mailer.apiUrl);
@@ -622,7 +624,7 @@ class CareerCompassApp {
     </div>
 
     <!-- Attachment Notice -->
-    ${Config.attachPdfReport ? `
+    ${Config.attachPdfReport && this.isValidResponse !== false ? `
     <div style="background-color: #f8feff; border-left: 4px solid #0b8f8f; padding: 15px; margin-bottom: 30px; border-radius: 6px;">
       <p style="margin: 0; color: #0b8f8f;">
         <strong>📎 Full Report Attached</strong>
