@@ -331,7 +331,21 @@ class CareerCompassApp {
     this.currentPage = this.pages.length;
 
     // Show loading while calculating scores
-    Loading.show('Calculating results...', 'Please wait');
+    Loading.show('Validating responses...', 'Please wait');
+
+    // Validate answer patterns for fraud detection
+    const patternValidation = Validator.validateAnswerPatterns(this.answers);
+
+    // Store validation result
+    this.isValidResponse = patternValidation.valid;
+    this.invalidationReason = patternValidation.reason;
+    this.invalidationDetails = patternValidation.details;
+
+    // Log validation results
+    if (!this.isValidResponse) {
+      console.warn('⚠️ Invalid response pattern detected:', this.invalidationDetails);
+      Analytics.trackError('invalid_response_pattern', this.invalidationReason, this.invalidationDetails);
+    }
 
     // Calculate scores
     const scores = Scoring.calculateScores(this.testData, this.answers);
@@ -343,12 +357,32 @@ class CareerCompassApp {
     this.reportData = reportData;
     this.scores = scores;
 
-    // Track test completion
-    Analytics.trackTestCompleted(this.demographics, scores);
+    // Track test completion (with validation status)
+    Analytics.trackTestCompleted(this.demographics, {
+      ...scores,
+      isValid: this.isValidResponse,
+      invalidationReason: this.invalidationReason
+    });
     Analytics.trackPageView(this.pages.length, 'results');
 
     Loading.hide();
 
+    // If invalid response pattern detected, skip showing report
+    if (!this.isValidResponse) {
+      console.log('📧 Skipping report display - sending invalidation email to admin');
+
+      // Send email notification to admin about invalid submission
+      await this.sendEmailReport();
+
+      // Save results anyway (marked as invalid)
+      await this.saveResults();
+
+      // Show message to student (without exposing detection details)
+      this.showInvalidSubmissionMessage();
+      return;
+    }
+
+    // Valid response - proceed normally
     if (Config.showResultsToUser) {
       // Show results to user
       Renderer.renderResults(this.testData, reportData, {
@@ -532,6 +566,23 @@ class CareerCompassApp {
       `;
     }).join('');
 
+    // Add invalid response warning if detected
+    const invalidResponseWarning = !this.isValidResponse ? `
+    <!-- INVALID RESPONSE WARNING -->
+    <div style="background-color: #fee; border-left: 4px solid #c33; padding: 15px; margin-bottom: 30px; border-radius: 6px;">
+      <p style="margin: 0; color: #c33;">
+        <strong>⚠️ INVALID RESPONSE PATTERN DETECTED</strong>
+      </p>
+      <p style="margin: 10px 0 5px 0; color: #333; font-size: 14px;">
+        <strong>Reason:</strong> ${this.invalidationDetails?.message || this.invalidationReason}
+      </p>
+      <p style="margin: 5px 0 0 0; color: #666; font-size: 13px;">
+        This submission appears to show suspicious answer patterns that suggest the assessment was not completed genuinely.
+        Please review before using this data for any career guidance purposes.
+      </p>
+    </div>
+    ` : '';
+
     return `
 <!DOCTYPE html>
 <html lang="en">
@@ -548,6 +599,8 @@ class CareerCompassApp {
       <h1 style="color: #0b8f8f; margin: 0 0 10px 0; font-size: 24px;">Assessment Completed</h1>
       <p style="color: #6b6f76; font-size: 14px; margin: 0;">${submittedAt}</p>
     </div>
+
+    ${invalidResponseWarning}
 
     <!-- Summary -->
     <div style="margin-bottom: 30px;">
@@ -742,30 +795,6 @@ class CareerCompassApp {
       // Add PDF-specific styling to make text much smaller to fit all content
       const style = document.createElement('style');
       style.textContent = `
-        /* Font sizes - extremely compact to fit all content */
-        * {
-          font-size: 6px !important;
-          line-height: 1.1 !important;
-        }
-        h1 {
-          font-size: 12px !important;
-          margin: 3px 0 !important;
-        }
-        h2 {
-          font-size: 10px !important;
-          margin: 3px 0 !important;
-        }
-        h3 {
-          font-size: 9px !important;
-          margin: 8px 0 2px 0 !important;
-        }
-        h4 {
-          font-size: 7px !important;
-          margin: 2px 0 !important;
-        }
-        .small-muted, .muted {
-          font-size: 5px !important;
-        }
         .btn {
           display: none !important;
         }
@@ -776,84 +805,14 @@ class CareerCompassApp {
           min-height: auto !important;
         }
 
-        /* Compact intro paragraphs */
-        #page-content > div:first-child p {
-          margin: 1px 0 !important;
-          font-size: 5px !important;
-          line-height: 1.1 !important;
+        /* Prevent page break after header */
+        .container, #page-content > div:first-child {
+          page-break-after: avoid !important;
         }
 
-        /* Keep report content flowing */
-        .report {
-          margin-top: 2px !important;
-        }
-
-        /* Compact student details section */
-        .two-col {
-          page-break-inside: avoid !important;
-          gap: 2px !important;
-        }
-        .metric {
-          padding: 2px !important;
-          margin-bottom: 1px !important;
-        }
-        .metric strong {
-          font-size: 7px !important;
-        }
-
-        /* Logo - keep at reasonable size */
-        img[alt="CGA Global"] {
-          max-width: 100px !important;
-        }
-
-        /* Hide clusters diagram from PDF */
+        /* Hide clusters image */
         img[src*="clusters.png"] {
           display: none !important;
-        }
-
-        /* Make all other images (icons, etc.) smaller - but not the logo */
-        img:not([alt="CGA Global"]):not([src*="clusters.png"]) {
-          max-width: 50% !important;
-          height: auto !important;
-        }
-
-        /* Spacing adjustments for PDF - extremely compact */
-        .container {
-          margin-bottom: 3px !important;
-        }
-        p {
-          margin: 2px 0 !important;
-        }
-
-        /* Reduce spacing in lists */
-        ol, ul {
-          margin: 2px 0 !important;
-          padding-left: 10px !important;
-        }
-        li {
-          margin: 1px 0 !important;
-        }
-
-        /* Compact tables */
-        table {
-          margin: 3px 0 !important;
-        }
-        td, th {
-          padding: 2px !important;
-          font-size: 6px !important;
-        }
-
-        /* Reduce "Why did we ask this" box padding */
-        div[style*="background-color: #f8feff"] {
-          padding: 3px !important;
-          margin: 2px 0 !important;
-        }
-
-        /* Make all colored boxes more compact */
-        .top-clusters, .neutral-clusters, .low-clusters,
-        div[style*="background-color"] {
-          padding: 3px !important;
-          margin: 2px 0 !important;
         }
       `;
       clone.insertBefore(style, clone.firstChild);
@@ -983,6 +942,38 @@ class CareerCompassApp {
 
     // Show completion page
     Renderer.renderCompletion(this.testData);
+  }
+
+  /**
+   * Show message for invalid submission (without revealing detection details)
+   */
+  showInvalidSubmissionMessage() {
+    // Clear session
+    Storage.clearSession(this.testId);
+
+    // Render a message that's friendly but doesn't reveal we detected fraud
+    const pageContent = document.getElementById('page-content');
+    pageContent.innerHTML = `
+      <div style="text-align: center; padding: 60px 20px; max-width: 600px; margin: 0 auto;">
+        <div style="font-size: 64px; margin-bottom: 20px;">📋</div>
+        <h2 style="color: var(--accent); margin-bottom: 16px;">Assessment Submission Received</h2>
+        <p style="color: var(--muted); line-height: 1.6; margin-bottom: 24px;">
+          Thank you for completing the assessment. Your responses have been submitted.
+        </p>
+        <div style="background: #f8feff; border-left: 4px solid #0b8f8f; padding: 16px; margin-bottom: 32px; text-align: left; border-radius: 8px;">
+          <p style="margin: 0 0 12px 0; color: #0b8f8f; font-weight: 600;">What happens next?</p>
+          <p style="margin: 0; color: #6b6f76; font-size: 14px; line-height: 1.6;">
+            Your assessment coordinator will review your responses and contact you shortly to discuss your results
+            and next steps for your career exploration journey.
+          </p>
+        </div>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+          <a href="index.html" class="btn" style="text-decoration: none;">
+            Return to Home
+          </a>
+        </div>
+      </div>
+    `;
   }
 
   /**

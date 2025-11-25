@@ -216,5 +216,147 @@ const Validator = {
       valid: errors.length === 0,
       errors
     };
+  },
+
+  /**
+   * Validate answer patterns to detect invalid/suspicious responses
+   * Detects patterns like: all same answers, straight-lining, etc.
+   *
+   * @param {Object} answers - All answers from the assessment
+   * @returns {Object} { valid: boolean, reason: string, details: Object }
+   */
+  validateAnswerPatterns(answers) {
+    const allAnswers = [];
+
+    // Flatten all answers into a single array
+    Object.values(answers).forEach(categoryAnswers => {
+      if (Array.isArray(categoryAnswers)) {
+        categoryAnswers.forEach(answer => {
+          if (answer !== null && answer !== undefined) {
+            allAnswers.push(answer);
+          }
+        });
+      }
+    });
+
+    // Need sufficient answers to validate
+    if (allAnswers.length < 10) {
+      return {
+        valid: true,
+        reason: 'Not enough answers to validate pattern'
+      };
+    }
+
+    // Check 1: All same value (straight-lining)
+    const uniqueValues = [...new Set(allAnswers)];
+    if (uniqueValues.length === 1) {
+      return {
+        valid: false,
+        reason: 'all_same_answer',
+        details: {
+          value: uniqueValues[0],
+          count: allAnswers.length,
+          message: `All ${allAnswers.length} answers were "${uniqueValues[0]}" (straight-lining detected)`
+        }
+      };
+    }
+
+    // Check 2: Excessive use of middle option (e.g., >80% are 3's on a 1-5 scale)
+    const answerCounts = {};
+    allAnswers.forEach(answer => {
+      answerCounts[answer] = (answerCounts[answer] || 0) + 1;
+    });
+
+    for (const [value, count] of Object.entries(answerCounts)) {
+      const percentage = (count / allAnswers.length) * 100;
+
+      // If more than 95% of answers are the same (likely middle option)
+      if (percentage > 95) {
+        return {
+          valid: false,
+          reason: 'excessive_same_answer',
+          details: {
+            value: value,
+            count: count,
+            total: allAnswers.length,
+            percentage: Math.round(percentage),
+            message: `${Math.round(percentage)}% of answers (${count}/${allAnswers.length}) were "${value}"`
+          }
+        };
+      }
+    }
+
+    // Check 3: Repeating pattern detection (e.g., 1,2,3,1,2,3,1,2,3...)
+    if (allAnswers.length >= 20) {
+      const patternDetected = this.detectRepeatingPattern(allAnswers);
+      if (patternDetected) {
+        return {
+          valid: false,
+          reason: 'repeating_pattern',
+          details: {
+            pattern: patternDetected.pattern,
+            repetitions: patternDetected.repetitions,
+            message: `Repeating pattern detected: [${patternDetected.pattern.join(',')}] repeated ${patternDetected.repetitions} times`
+          }
+        };
+      }
+    }
+
+    // Passes all checks
+    return {
+      valid: true,
+      reason: 'genuine_responses',
+      details: {
+        totalAnswers: allAnswers.length,
+        uniqueValues: uniqueValues.length,
+        distribution: answerCounts
+      }
+    };
+  },
+
+  /**
+   * Detect repeating patterns in answer array
+   * @param {Array} answers - Array of answers
+   * @returns {Object|null} Pattern info or null
+   */
+  detectRepeatingPattern(answers) {
+    // Try pattern lengths from 2 to 10
+    for (let patternLength = 2; patternLength <= Math.min(10, Math.floor(answers.length / 4)); patternLength++) {
+      const pattern = answers.slice(0, patternLength);
+      let matches = 0;
+      let totalChecks = 0;
+
+      // Check how many times this pattern repeats
+      for (let i = 0; i < answers.length - patternLength + 1; i += patternLength) {
+        totalChecks++;
+        const segment = answers.slice(i, i + patternLength);
+
+        // Check if segment matches pattern
+        let segmentMatches = true;
+        for (let j = 0; j < patternLength; j++) {
+          if (segment[j] !== pattern[j]) {
+            segmentMatches = false;
+            break;
+          }
+        }
+
+        if (segmentMatches) {
+          matches++;
+        }
+      }
+
+      // If pattern repeats at least 5 times with 70%+ consistency
+        // Change 4 to 3 (stricter) or 5 (looser)
+        // Change 0.8 to 0.7 (looser) or 0.9 (stricter)
+      if (matches >= 5 && (matches / totalChecks) >= 0.7) {
+        return {
+          pattern: pattern,
+          repetitions: matches,
+          consistency: Math.round((matches / totalChecks) * 100)
+        };
+      }
+    }
+
+    return null;
   }
 };
