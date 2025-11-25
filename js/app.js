@@ -1019,6 +1019,7 @@ class CareerCompassApp {
     panel.innerHTML = `
       <div style="margin-bottom:10px;font-weight:bold">Debug Panel</div>
       <button onclick="app.debugSkipToResults()" style="margin:5px 0;padding:5px 10px;width:100%">Skip to Results</button>
+      <button onclick="app.debugSkipToResultsWith3s()" style="margin:5px 0;padding:5px 10px;width:100%">Skip to Results (3's)</button>
       <button onclick="app.debugClearSession()" style="margin:5px 0;padding:5px 10px;width:100%">Clear Session</button>
       <div style="margin-top:10px;font-size:10px;opacity:0.7">Press Ctrl+Shift+Z to toggle</div>
     `;
@@ -1060,6 +1061,33 @@ class CareerCompassApp {
     // Go to results
     this.renderResults();
   }
+
+    /**
+     * Debug: Skip to results with all 3's for answers
+     */
+    debugSkipToResultsWith3s() {
+        // Fill demographics if empty
+        if (!this.demographics.studentName) {
+            this.demographics = {
+                studentName: 'Test Student',
+                age: '16',
+                grade: '10',
+                email: 'test@example.com',
+                contact: '0821234567',
+                date: new Date().toISOString().slice(0, 10)
+            };
+        }
+
+        // Fill all answers with random values (1-5)
+        Object.keys(this.answers).forEach(key => {
+            this.answers[key] = this.answers[key].map(() => 3);
+        });
+
+        console.log('All answers filled with random values (1-5)');
+
+        // Go to results
+        this.renderResults();
+    }
 
   /**
    * Debug: Clear session
