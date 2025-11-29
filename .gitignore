@@ -25,6 +25,7 @@ build/
 
 # AI Files
 CLAUDE.md
+/.claude/
 
 # Data directories (runtime data should not be in git)
 data/results/
