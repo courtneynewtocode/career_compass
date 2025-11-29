@@ -9,7 +9,7 @@ const Renderer = {
   renderIntro(testData, demographics, callbacks) {
     const today = new Date().toISOString().slice(0, 10);
 
-      const html = `
+    const html = `
       <div>
         <div class="container" style="position: relative; display: flex; align-items: end ; margin-bottom: 30px; min-height: 80px;">
             <img src="assets/cga-logo.jpg" alt="CGA Global" style="position: absolute; top: 0; right: 0; width: 180px; height: auto;" />
@@ -44,7 +44,7 @@ const Renderer = {
                 <div style="display: flex; align-items: start; gap: 10px; padding: 10px; background: rgba(11, 143, 143, 0.03); border-radius: 8px;">
                   <span style="font-size: 18px; flex-shrink: 0;">🧭</span>
                   <div style="font-size: 14px; color: #374151;">
-                    <strong style="color: #0f1720;">Navigation:</strong> Use Next and Back buttons. You can't move forward without answering every question on the page.
+                    <strong style="color: #0f1720;">Navigation:</strong> ${Config.showBackButton ? 'Use Next and Back buttons.' : 'Use the Next button to continue.'} You can't move forward without answering every question on the page.
                   </div>
                 </div>
                 <div style="display: flex; align-items: start; gap: 10px; padding: 10px; background: rgba(11, 143, 143, 0.03); border-radius: 8px;">
@@ -61,10 +61,10 @@ const Renderer = {
               <h3 style="margin:0 0 16px 0; color: var(--accent); font-size: 18px;">Student Details</h3>
               <div style="display:grid;gap:12px">
                 ${testData.demographics.fields.map(field => {
-                  // Check if this field should be a select dropdown
-                  if (field.type === 'select' && field.options) {
-                    const currentValue = demographics[field.key] || '';
-                    return `
+      // Check if this field should be a select dropdown
+      if (field.type === 'select' && field.options) {
+        const currentValue = demographics[field.key] || '';
+        return `
                       <select
                         id="demo-${field.key}"
                         ${field.required ? 'required' : ''}
@@ -76,10 +76,10 @@ const Renderer = {
                         `).join('')}
                       </select>
                     `;
-                  }
+      }
 
-                  // Regular input field
-                  let attrs = `
+      // Regular input field
+      let attrs = `
                     id="demo-${field.key}"
                     type="${field.type}"
                     placeholder="${field.placeholder}"
@@ -87,29 +87,29 @@ const Renderer = {
                     ${field.required ? 'required' : ''}
                   `;
 
-                  // Add field-specific validation attributes
-                  if (field.key === 'studentName') {
-                    attrs += ` minlength="2" maxlength="100" pattern="[a-zA-Z\\s\\-']+" title="Name should contain only letters, spaces, hyphens, and apostrophes"`;
-                  }
+      // Add field-specific validation attributes
+      if (field.key === 'studentName') {
+        attrs += ` minlength="2" maxlength="100" pattern="[a-zA-Z\\s\\-']+" title="Name should contain only letters, spaces, hyphens, and apostrophes"`;
+      }
 
-                  if (field.key === 'age') {
-                    attrs += ` min="10" max="100" title="Age should be between 10 and 100"`;
-                  }
+      if (field.key === 'age') {
+        attrs += ` min="10" max="100" title="Age should be between 10 and 100"`;
+      }
 
-                  if (field.key === 'grade' && field.type === 'text') {
-                    attrs += ` maxlength="30" title="Enter your grade (e.g., K, R, 1-12) or year of study (e.g., 1st Year, Final Year)"`;
-                  }
+      if (field.key === 'grade' && field.type === 'text') {
+        attrs += ` maxlength="30" title="Enter your grade (e.g., K, R, 1-12) or year of study (e.g., 1st Year, Final Year)"`;
+      }
 
-                  if (field.validation === 'email') {
-                    attrs += ` title="Enter a valid email address (e.g., name@example.com)"`;
-                  }
+      if (field.validation === 'email') {
+        attrs += ` title="Enter a valid email address (e.g., name@example.com)"`;
+      }
 
-                  if (field.validation === 'phone') {
-                    attrs += ` pattern="[0-9\\s\\-\\+\\(\\)]+" title="Enter a valid contact number (e.g., 0812345678 or +27812345678)"`;
-                  }
+      if (field.validation === 'phone') {
+        attrs += ` pattern="[0-9\\s\\-\\+\\(\\)]+" title="Enter a valid contact number (e.g., 0812345678 or +27812345678)"`;
+      }
 
-                  return `<input ${attrs} />`;
-                }).join('')}
+      return `<input ${attrs} />`;
+    }).join('')}
               </div>
               <div style="height:20px"></div>
               <button class="btn" id="start-btn" style="width: 100%;">Start Assessment</button>
@@ -180,9 +180,11 @@ const Renderer = {
       <div id="qs"></div>
 
       <div class="nav">
+        ${Config.showBackButton ? `
         <div>
           <button class="btn secondary" id="back-btn" ${pageIndex === 0 ? 'disabled' : ''}>Back</button>
         </div>
+        ` : '<div></div>'}
         <div>
           <button class="btn" id="next-btn">${pageIndex === totalPages - 1 ? 'Submit' : 'Next'}</button>
         </div>
@@ -225,9 +227,11 @@ const Renderer = {
     });
 
     // Navigation
-    document.getElementById('back-btn').addEventListener('click', () => {
-      callbacks.onBack();
-    });
+    if (Config.showBackButton) {
+      document.getElementById('back-btn').addEventListener('click', () => {
+        callbacks.onBack();
+      });
+    }
 
     document.getElementById('next-btn').addEventListener('click', async () => {
       // Validate all questions answered
@@ -327,6 +331,7 @@ const Renderer = {
     let html = '';
 
     for (const [sectionId, section] of Object.entries(sections)) {
+      html += `<div class="no-break">`;
       html += `<h3 style="margin-top:50px">${section.title}</h3>`;
 
       if (section.description) {
@@ -350,7 +355,7 @@ const Renderer = {
               // Rebuild with icons
               description = `
                 ${parts[0]}
-                <div style="margin: 6px 0 12px 0; padding: 10px; background-color: #f8feff; border-radius: 8px;">
+                <div class="info-box" style="margin: 6px 0 12px 0; padding: 10px; background-color: #f8feff; border-radius: 8px;">
                   <p style="margin: 0 0 8px 0; display: flex; align-items: center; gap: 8px;">
                     <img src="assets/question.png" alt="?" style="width: 20px; height: 20px;" />
                     <strong>Why did we ask you this?</strong>
@@ -374,7 +379,7 @@ const Renderer = {
 
       if (section.display === 'top3-bottom3') {
         html += `
-          <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <div class="cluster-group" style="display:flex;gap:12px;flex-wrap:wrap">
             <div style="flex:1" class="top-clusters">
               <h4>Top 3</h4>
               <ol>
@@ -391,7 +396,7 @@ const Renderer = {
         `;
       } else if (section.display === 'top3-bottom2') {
         html += `
-          <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <div class="cluster-group" style="display:flex;gap:12px;flex-wrap:wrap">
             <div style="flex:1" class="top-clusters">
               <h4>Top 3</h4>
               <ol>
@@ -413,17 +418,17 @@ const Renderer = {
           <div style="margin-bottom:16px">
             <ol>
               ${allItems.map(item => {
-                const displayText = item.name || item.title;
-                const score = item.total !== undefined ? `(Total: ${item.total})` :
-                             item.avg !== undefined ? `(Avg: ${item.avg})` : '';
-                return `<li>${displayText} ${score}</li>`;
-              }).join('')}
+          const displayText = item.name || item.title;
+          const score = item.total !== undefined ? `(Total: ${item.total})` :
+            item.avg !== undefined ? `(Avg: ${item.avg})` : '';
+          return `<li>${displayText} ${score}</li>`;
+        }).join('')}
             </ol>
           </div>
         `;
       } else if (section.display === 'clusters') {
         html += `
-          <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <div class="cluster-group" style="display:flex;gap:12px;flex-wrap:wrap">
             <div style="flex:1" class="top-clusters">
               <h4>Top 3 strength clusters</h4>
               <ol>
@@ -441,7 +446,7 @@ const Renderer = {
       } else if (section.display === 'grouped-thirds') {
         // Section C: Top 3 (green), Middle 3 (grey), Bottom 3 (brown)
         html += `
-          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+          <div class="cluster-group" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
             <div style="flex:1" class="top-clusters">
               <h4>Top 3 Strengths</h4>
               <ol>
@@ -465,7 +470,7 @@ const Renderer = {
       } else if (section.display === 'grouped-reverse') {
         // Section D: First 3 (brown - high growth need), Last 3 (grey - lower priority)
         html += `
-          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+          <div class="cluster-group" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
             <div style="flex:1" class="low-clusters">
               <h4>Highest Growth Areas (Priority 1-3)</h4>
               <ol>
@@ -494,12 +499,13 @@ const Renderer = {
       // Add guidance if available
       if (section.guidance) {
         html += `
-          <div style="margin-top: 16px; display: flex; align-items: flex-start; gap: 12px; line-height: 1.6; padding: 10px; background-color: #f8feff; border-radius: 8px;">
+          <div class="guidance-box" style="margin-top: 16px; display: flex; align-items: flex-start; gap: 12px; line-height: 1.6; padding: 10px; background-color: #f8feff; border-radius: 8px;">
             <img src="assets/star.png" alt="★" style="width: 35px; height: 35px; flex-shrink: 0; margin-top: 2px;" />
             <div>${section.guidance}</div>
           </div>
         `;
       }
+      html += `</div>`;
     }
 
     return html;

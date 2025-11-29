@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
   <link rel="stylesheet" href="css/layout.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/report.css">
+  <link rel="stylesheet" href="css/dashboard-modern.css">
   <style>
     /* Dashboard-specific styles */
     .dashboard-container {
@@ -228,8 +230,13 @@
     }
 
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
 
     .empty-state {
@@ -246,12 +253,17 @@
     }
   </style>
 </head>
+
 <body>
-  <header style="background: white; box-shadow: 0 2px 8px rgba(11, 143, 143, 0.08); padding: 16px 20px; margin-bottom: 30px;">
-    <div style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
-      <h1 style="margin: 0; font-size: 24px; color: var(--accent);">📊 Assessment Results Dashboard</h1>
+  <header
+    style="background: linear-gradient(135deg, #ffffff 0%, #f8fcfc 100%); box-shadow: 0 2px 16px rgba(11, 143, 143, 0.1); padding: 20px 24px; margin-bottom: 32px; border-bottom: 1px solid rgba(11, 143, 143, 0.08);">
+    <div style="max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+      <h1
+        style="margin: 0; font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #0b8f8f 0%, #0ea6a6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+        📊 Assessment Results Dashboard</h1>
       <div style="display: flex; gap: 12px;">
-        <button onclick="Dashboard.refreshData()" class="btn secondary" style="text-decoration: none;">🔄 Refresh</button>
+        <button onclick="Dashboard.refreshData()" class="btn secondary" style="text-decoration: none;">🔄
+          Refresh</button>
         <a href="index.html" class="btn secondary" style="text-decoration: none;">← Back to Home</a>
         <button onclick="DashboardAuth.logout()" class="btn secondary" style="text-decoration: none;">🔒 Logout</button>
       </div>
@@ -259,99 +271,111 @@
   </header>
 
   <div class="dashboard-container">
-    <!-- Analytics Overview -->
-    <div class="stats-grid" id="analytics-stats">
-      <div class="stat-card">
-        <div class="stat-label">Total Started</div>
-        <div class="stat-value" id="analytics-started">-</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Completed</div>
-        <div class="stat-value" id="analytics-completed">-</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Completion Rate</div>
-        <div class="stat-value" id="analytics-completion-rate">-</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Email Success</div>
-        <div class="stat-value" id="analytics-email-success">-</div>
-      </div>
-    </div>
+    <div class="dashboard-layout">
+      <!-- Left Column: Main Content (Filters & Results) -->
+      <div class="main-content">
+        <!-- Filters -->
+        <div class="filters">
+          <input type="text" id="search-input" class="filter-input" placeholder="🔍 Search by name, email...">
+          <select id="test-filter" class="filter-select">
+            <option value="">All Tests</option>
+            <option value="career-compass">Career Compass</option>
+            <option value="career-readiness">Career Readiness</option>
+          </select>
+          <select id="sort-filter" class="filter-select">
+            <option value="date-desc">Newest First</option>
+            <option value="date-asc">Oldest First</option>
+            <option value="name-asc">Name (A-Z)</option>
+            <option value="name-desc">Name (Z-A)</option>
+          </select>
+          <button class="btn" onclick="Dashboard.refreshData()"
+            style="white-space: nowrap; background: #0b8f8f; color: white; border: none; border-radius: 12px; padding: 12px 24px; font-weight: 600; cursor: pointer;">🔄
+            Refresh</button>
+        </div>
 
-    <!-- Stats Overview -->
-    <div class="stats-grid" id="stats-grid" style="margin-top: 20px;">
-      <div class="stat-card">
-        <div class="stat-label">Total Results</div>
-        <div class="stat-value" id="stat-total">-</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Career Compass</div>
-        <div class="stat-value" id="stat-compass">-</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Career Readiness</div>
-        <div class="stat-value" id="stat-readiness">-</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Last 7 Days</div>
-        <div class="stat-value" id="stat-recent">-</div>
-      </div>
-    </div>
+        <!-- Results Table -->
+        <div class="results-table">
+          <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading assessment results...</p>
+          </div>
 
-    <!-- Filters -->
-    <div class="filters">
-      <input
-        type="text"
-        id="search-input"
-        class="filter-input"
-        placeholder="🔍 Search by name, email..."
-      >
-      <select id="test-filter" class="filter-select">
-        <option value="">All Tests</option>
-        <option value="career-compass">Career Compass</option>
-        <option value="career-readiness">Career Readiness</option>
-      </select>
-      <select id="sort-filter" class="filter-select">
-        <option value="date-desc">Newest First</option>
-        <option value="date-asc">Oldest First</option>
-        <option value="name-asc">Name (A-Z)</option>
-        <option value="name-desc">Name (Z-A)</option>
-      </select>
-      <button class="btn" onclick="Dashboard.refreshData()" style="white-space: nowrap;">🔄 Refresh</button>
-    </div>
+          <div id="empty-state" class="empty-state" style="display: none;">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+            </svg>
+            <h3>No Results Found</h3>
+            <p>There are no assessment results to display yet.</p>
+          </div>
 
-    <!-- Results Table -->
-    <div class="results-table">
-      <div id="loading" class="loading">
-        <div class="spinner"></div>
-        <p>Loading assessment results...</p>
+          <table id="results-table" style="display: none;">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Name</th>
+                <th>Test Type</th>
+                <th>Grade/Year</th>
+                <th>Email</th>
+                <th>Duration</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="results-tbody">
+              <!-- Results will be populated here -->
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div id="empty-state" class="empty-state" style="display: none;">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
-        </svg>
-        <h3>No Results Found</h3>
-        <p>There are no assessment results to display yet.</p>
-      </div>
+      <!-- Right Column: Sidebar (Stats) -->
+      <div class="sidebar">
+        <h3
+          style="margin: 0 0 16px 0; font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">
+          Analytics</h3>
+        <!-- Analytics Overview -->
+        <div class="stats-grid" id="analytics-stats">
+          <div class="stat-card">
+            <div class="stat-label">Total Started</div>
+            <div class="stat-value" id="analytics-started">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Completed</div>
+            <div class="stat-value" id="analytics-completed">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Completion Rate</div>
+            <div class="stat-value" id="analytics-completion-rate">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Email Success</div>
+            <div class="stat-value" id="analytics-email-success">-</div>
+          </div>
+        </div>
 
-      <table id="results-table" style="display: none;">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Name</th>
-            <th>Test Type</th>
-            <th>Grade/Year</th>
-            <th>Email</th>
-            <th>Duration</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="results-tbody">
-          <!-- Results will be populated here -->
-        </tbody>
-      </table>
+        <h3
+          style="margin: 32px 0 16px 0; font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">
+          Overview</h3>
+        <!-- Stats Overview -->
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Results</div>
+            <div class="stat-value" id="stat-total">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Career Compass</div>
+            <div class="stat-value" id="stat-compass">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Career Readiness</div>
+            <div class="stat-value" id="stat-readiness">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Last 7 Days</div>
+            <div class="stat-value" id="stat-recent">-</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -383,4 +407,5 @@
     }
   </script>
 </body>
+
 </html>

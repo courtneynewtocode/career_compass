@@ -39,6 +39,16 @@ const Config = {
   attachPdfReport: true,
 
   /**
+   * Show back button during assessment
+   * - true: Allow students to go back to previous questions
+   * - false: Hide back button (students can only move forward)
+   *
+   * Note: Hiding the back button prevents students from changing answers
+   * after viewing later questions.
+   */
+  showBackButton: false,
+
+  /**
    * Store assessment results to file-based storage
    * - true: Save results to storage API for dashboard viewing
    * - false: Don't store results (only send email)

@@ -99,7 +99,7 @@ const DashboardAuth = {
             <button
               type="submit"
               class="btn"
-              style="width: 100%; padding: 14px; font-size: 16px; cursor: pointer;"
+              style="width: 100%; padding: 14px; font-size: 16px; cursor: pointer; background: #0b8f8f; color: white; border: none; border-radius: 12px; font-weight: 600;"
             >
               Login
             </button>

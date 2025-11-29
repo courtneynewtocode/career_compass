@@ -59,10 +59,31 @@ const Dashboard = {
         })
       });
 
-      const result = await response.json();
+      // Check if response is OK
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('STORAGE_NOT_FOUND');
+        } else if (response.status === 502 || response.status === 503) {
+          throw new Error('SERVER_UNAVAILABLE');
+        } else if (response.status >= 500) {
+          throw new Error('SERVER_ERROR');
+        } else if (response.status === 401 || response.status === 403) {
+          throw new Error('ACCESS_DENIED');
+        } else {
+          throw new Error('NETWORK_ERROR');
+        }
+      }
+
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        console.error('JSON Parse Error:', parseError);
+        throw new Error('INVALID_RESPONSE');
+      }
 
       if (!result.success) {
-        throw new Error('Failed to load results: ' + (result.message || 'Unknown error'));
+        throw new Error(result.message || 'Unknown error');
       }
 
       this.allResults = result.data || [];
@@ -81,10 +102,50 @@ const Dashboard = {
 
     } catch (error) {
       console.error('❌ Error loading results:', error);
+
+      // Determine user-friendly message based on error type
+      let errorTitle = '⚠️ Unable to Load Results';
+      let errorMessage = '';
+      let showRetry = true;
+
+      if (error.message === 'STORAGE_NOT_FOUND') {
+        errorTitle = '🔧 Setup Required';
+        errorMessage = 'The storage API endpoint is not configured or cannot be found. Please check your configuration in <code>js/config.js</code>.';
+      } else if (error.message === 'SERVER_UNAVAILABLE') {
+        errorTitle = '🌐 Server Temporarily Unavailable';
+        errorMessage = 'The storage server is currently unavailable. This might be due to maintenance or high traffic. Please try again in a few moments.';
+      } else if (error.message === 'SERVER_ERROR') {
+        errorTitle = '⚠️ Server Error';
+        errorMessage = 'The storage server encountered an error. Please try again later or contact your administrator.';
+      } else if (error.message === 'ACCESS_DENIED') {
+        errorTitle = '🔒 Access Denied';
+        errorMessage = 'Your access key may be invalid or you don\'t have permission to view results. Please check your credentials.';
+        showRetry = false;
+      } else if (error.message === 'INVALID_RESPONSE') {
+        errorTitle = '⚠️ Invalid Server Response';
+        errorMessage = 'The server returned an invalid response. This usually means the API endpoint is not properly configured or is returning HTML instead of JSON data.';
+      } else if (error.message === 'NETWORK_ERROR' || error.message.includes('fetch')) {
+        errorTitle = '🌐 Connection Error';
+        errorMessage = 'Unable to connect to the storage server. Please check your internet connection and try again.';
+      } else if (error.message.includes('Failed to load')) {
+        errorMessage = error.message;
+      } else {
+        errorMessage = `An unexpected error occurred: ${error.message}`;
+      }
+
       document.getElementById('loading').innerHTML = `
-        <p style="color: #ef4444;">⚠️ Error loading results</p>
-        <p style="font-size: 14px;">${error.message}</p>
-        <button class="btn" onclick="Dashboard.refreshData()">Retry</button>
+        <div style="max-width: 600px; margin: 0 auto; text-align: center;">
+          <p style="color: #ef4444; font-size: 18px; font-weight: 600; margin-bottom: 12px;">${errorTitle}</p>
+          <p style="font-size: 15px; color: #6b7280; line-height: 1.6; margin-bottom: 24px;">${errorMessage}</p>
+          ${showRetry ? `
+            <button class="btn" onclick="Dashboard.refreshData()" style="background: #0b8f8f; color: white; border: none; border-radius: 12px; padding: 12px 24px; font-weight: 600; cursor: pointer; margin-right: 12px;">
+              🔄 Try Again
+            </button>
+          ` : ''}
+          <a href="index.html" class="btn secondary" style="display: inline-block; text-decoration: none; padding: 12px 24px; border-radius: 12px;">
+            ← Back to Home
+          </a>
+        </div>
       `;
     }
   },
@@ -107,7 +168,19 @@ const Dashboard = {
         })
       });
 
-      const result = await response.json();
+      // Check if response is OK
+      if (!response.ok) {
+        throw new Error(`Server returned status ${response.status}`);
+      }
+
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        console.error('JSON Parse Error in analytics:', parseError);
+        // If analytics fails to parse, we'll just use default values
+        throw new Error('INVALID_RESPONSE');
+      }
 
       if (!result.success) {
         throw new Error('Failed to load analytics: ' + (result.message || 'Unknown error'));
@@ -118,6 +191,7 @@ const Dashboard = {
 
     } catch (error) {
       console.error('❌ Error loading analytics:', error);
+      // Fallback to zero values on error so the dashboard doesn't look broken
       this.analytics = {
         test_started: 0,
         test_completed: 0,
@@ -125,6 +199,9 @@ const Dashboard = {
         email_sent_success: 0,
         email_sent_failure: 0
       };
+
+      // We don't show a UI error for analytics to avoid cluttering the dashboard,
+      // as the main results table error is sufficient feedback for the user.
     }
   },
 
@@ -294,7 +371,7 @@ const Dashboard = {
           <td>${this.escapeHtml(email)}</td>
           <td>${duration}</td>
           <td>
-            <button class="view-btn" onclick="Dashboard.viewResult(${index})">View</button>
+            <button class="view-btn" onclick="Dashboard.viewResult(${index})" style="background: #0b8f8f; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;">View</button>
           </td>
         </tr>
       `;
@@ -426,15 +503,15 @@ const Dashboard = {
           <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
             <div style="flex:1" class="top-clusters">
               <h4>Top 3 Strengths</h4>
-              <ol>${section.topThird.map(c => `<li>${c.name} (Total: ${c.total})</li>`).join('')}</ol>
+              <ol>${section.topThird?.map(c => `<li>${c.name} (Total: ${c.total})</li>`).join('') || '<li>No data available</li>'}</ol>
             </div>
             <div style="flex:1" class="neutral-clusters">
               <h4>Middle 3 Strengths</h4>
-              <ol start="4">${section.midThird.map(c => `<li>${c.name} (Total: ${c.total})</li>`).join('')}</ol>
+              <ol start="4">${section.midThird?.map(c => `<li>${c.name} (Total: ${c.total})</li>`).join('') || '<li>No data available</li>'}</ol>
             </div>
             <div style="flex:1" class="low-clusters">
               <h4>Bottom 3 Strengths</h4>
-              <ol start="7">${section.bottomThird.map(c => `<li>${c.name} (Total: ${c.total})</li>`).join('')}</ol>
+              <ol start="7">${section.bottomThird?.map(c => `<li>${c.name} (Total: ${c.total})</li>`).join('') || '<li>No data available</li>'}</ol>
             </div>
           </div>
         `;
@@ -443,11 +520,11 @@ const Dashboard = {
           <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
             <div style="flex:1" class="low-clusters">
               <h4>Areas to Prioritize</h4>
-              <ol>${section.topThird.map(c => `<li>${c.name} (Total: ${c.total})</li>`).join('')}</ol>
+              <ol>${section.topThird?.map(c => `<li>${c.name} (Total: ${c.total})</li>`).join('') || '<li>No data available</li>'}</ol>
             </div>
             <div style="flex:1" class="neutral-clusters">
               <h4>Developing Areas</h4>
-              <ol start="4">${section.midThird.map(c => `<li>${c.name} (Total: ${c.total})</li>`).join('')}</ol>
+              <ol start="4">${section.midThird?.map(c => `<li>${c.name} (Total: ${c.total})</li>`).join('') || '<li>No data available</li>'}</ol>
             </div>
           </div>
         `;

@@ -63,10 +63,38 @@ attachPdfReport: false  // Email includes simple HTML only (no PDF)
 
 ---
 
-### `storeResults`
+### `showBackButton`
 
 **Type:** Boolean
 **Default:** `false`
+
+Controls whether the back button is visible during the assessment.
+
+```javascript
+showBackButton: true   // Allow students to go back to previous questions
+showBackButton: false  // Hide back button (forward-only navigation)
+```
+
+**When `true`:**
+- Back button is visible on all question pages
+- Students can navigate backwards to change answers
+- First page has disabled back button
+
+**When `false`:**
+- Back button is hidden
+- Students can only move forward through the assessment
+- Prevents changing answers after viewing later questions
+
+**Use cases:**
+- `true` - Formative assessments where review is encouraged
+- `false` - High-stakes assessments to prevent pattern gaming (recommended)
+
+---
+
+### `storeResults`
+
+**Type:** Boolean
+**Default:** `true`
 
 Controls whether results are stored locally for dashboard viewing.
 
@@ -79,6 +107,7 @@ storeResults: false  // Only send email (no storage)
 - Results saved to `data/results/` directory
 - Accessible via `dashboard.html`
 - Stored as JSON files
+- Analytics tracking enabled
 
 **When `false`:**
 - Results only sent via email
@@ -86,82 +115,136 @@ storeResults: false  // Only send email (no storage)
 - Dashboard will be empty
 
 **Use cases:**
-- `true` - When you want to view all results in a dashboard
-- `false` - When email delivery is sufficient (default)
+- `true` - When you want to view all results in a dashboard (recommended)
+- `false` - When email delivery is sufficient
+
+---
+
+### `dashboard`
+
+**Type:** Object
+**Default:** `{ password: 'admin123', requireAuth: true }`
+
+Controls dashboard authentication settings.
+
+```javascript
+dashboard: {
+  password: 'admin123',      // Dashboard password
+  requireAuth: true          // Enable/disable password protection
+}
+```
+
+**Properties:**
+- `password` - Password required to access dashboard
+- `requireAuth` - Set to `false` to disable authentication (not recommended)
+
+**Security Notes:**
+- **IMPORTANT:** Change the default password before deployment!
+- Password is stored client-side (suitable for basic protection only)
+- For production use, consider server-side authentication
+
+**Use cases:**
+- Change password to a strong, unique value for production
+- Set `requireAuth: false` only for trusted/local environments
 
 ---
 
 ## Configuration Examples
 
-### Example 1: Show Results + PDF (Default)
+### Example 1: Production Setup (Recommended)
 ```javascript
 const Config = {
   mailer: { /* ... */ },
   showResultsToUser: true,
   attachPdfReport: true,
-  storeResults: false
+  showBackButton: false,
+  storeResults: true,
+  dashboard: {
+    password: 'your-strong-password-here',
+    requireAuth: true
+  }
 };
 ```
 
 **Behavior:**
 - Student sees results ✓
 - Email sent with PDF attachment ✓
-- No local storage
-- Best for formative assessments
+- No back button (prevents gaming) ✓
+- Results saved to dashboard ✓
+- Dashboard protected by password ✓
+- **Best for production use**
 
 ---
 
-### Example 2: Hide Results + PDF Only
+### Example 2: High-Stakes Assessment
 ```javascript
 const Config = {
   mailer: { /* ... */ },
   showResultsToUser: false,
   attachPdfReport: true,
-  storeResults: false
+  showBackButton: false,
+  storeResults: true,
+  dashboard: {
+    password: 'your-strong-password-here',
+    requireAuth: true
+  }
 };
 ```
 
 **Behavior:**
 - Student does NOT see results
 - Email sent with PDF to admin only
-- No local storage
-- Best for summative/confidential assessments
+- Forward-only navigation ✓
+- Results saved to dashboard ✓
+- **Best for summative/confidential assessments**
 
 ---
 
-### Example 3: Show Results + Store Locally
+### Example 3: Formative Assessment
 ```javascript
 const Config = {
   mailer: { /* ... */ },
   showResultsToUser: true,
   attachPdfReport: true,
-  storeResults: true
+  showBackButton: true,
+  storeResults: true,
+  dashboard: {
+    password: 'admin123',
+    requireAuth: true
+  }
 };
 ```
 
 **Behavior:**
 - Student sees results ✓
 - Email sent with PDF ✓
+- Back button enabled (allows review) ✓
 - Results saved to dashboard ✓
-- Best when you want both email and dashboard access
+- **Best for formative/practice assessments**
 
 ---
 
-### Example 4: Email Only (No PDF, No Storage)
+### Example 4: Email Only (Minimal)
 ```javascript
 const Config = {
   mailer: { /* ... */ },
   showResultsToUser: false,
   attachPdfReport: false,
-  storeResults: false
+  showBackButton: false,
+  storeResults: false,
+  dashboard: {
+    password: 'admin123',
+    requireAuth: false
+  }
 };
 ```
 
 **Behavior:**
 - Student does NOT see results
 - Simple email sent (no PDF)
+- No back button
 - No local storage
-- Fastest processing, minimal footprint
+- **Fastest processing, minimal footprint**
 
 ---
 
@@ -192,19 +275,39 @@ mailer: {
    - Happens before showing results or completion page
 
 2. **PDF generation happens client-side**
-   - Generated in browser using html2pdf.js library
+   - Generated in browser using html2pdf.js library (lazy-loaded)
    - Attached to email via FormData/multipart upload
    - Takes a few seconds to generate
    - No server-side processing needed
+   - **Skipped automatically for invalid responses** (fraud detection)
 
-3. **Configuration changes require re-deployment**
+3. **Fraud Detection**
+   - Invalid response patterns are automatically detected:
+     - All same answers (e.g., all 3's)
+     - Excessive same answer (>95%)
+     - Repeating patterns (5+ times at 70%+ consistency)
+   - When detected:
+     - Student sees friendly completion message (no results shown)
+     - Email sent to admin with warning banner
+     - **No PDF generated or attached**
+     - Results NOT saved to dashboard
+
+4. **Configuration changes require re-deployment**
    - Edit `js/config.js`
    - Upload to server or redeploy
    - Clear browser cache if testing locally
 
-4. **All flags are independent**
+5. **All flags are independent**
    - You can enable/disable them separately
    - Choose any combination based on your needs
+
+6. **Dashboard Features**
+   - Password protection (change default password!)
+   - Session-based authentication using sessionStorage
+   - Analytics tracking (test starts, completions, email success)
+   - Modern sidebar layout with stats
+   - Error handling with user-friendly messages
+   - Export/view individual results
 
 ---
 
