@@ -1,0 +1,256 @@
+/* Modern Dashboard Overrides */
+
+/* Modern Background */
+body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8f4f4 100%) !important;
+    min-height: 100vh;
+}
+
+/* Layout Grid */
+.dashboard-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+    align-items: start;
+}
+
+@media (max-width: 1024px) {
+    .dashboard-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        order: -1;
+        /* Show stats on top on mobile */
+    }
+}
+
+/* Enhanced Stats Cards */
+.stat-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fcfc 100%) !important;
+    border-radius: 18px !important;
+    padding: 24px !important;
+    box-shadow: 0 4px 20px rgba(11, 143, 143, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    border: 1px solid rgba(11, 143, 143, 0.08) !important;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 0 !important;
+    /* Remove bottom margin as grid handles gap */
+}
+
+/* Sidebar Stats Grid - Stack vertically in sidebar */
+.sidebar .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #0b8f8f 0%, #0ea6a6 100%);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover::before {
+    transform: scaleX(1);
+}
+
+.stat-card:hover {
+    box-shadow: 0 8px 30px rgba(11, 143, 143, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    transform: translateY(-4px) !important;
+    border-color: rgba(11, 143, 143, 0.15) !important;
+}
+
+.stat-value {
+    font-size: 36px !important;
+    font-weight: 800 !important;
+    background: linear-gradient(135deg, #0b8f8f 0%, #0ea6a6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2 !important;
+    margin: 4px 0 !important;
+}
+
+.stat-label {
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    color: #6b7280 !important;
+    letter-spacing: 1px !important;
+    text-transform: uppercase;
+}
+
+/* Enhanced Filters */
+.filters {
+    background: white !important;
+    border-radius: 16px !important;
+    padding: 24px !important;
+    box-shadow: 0 2px 12px rgba(11, 143, 143, 0.08) !important;
+    border: 1px solid rgba(11, 143, 143, 0.08) !important;
+}
+
+.filter-input,
+.filter-select {
+    border: 2px solid #e5e7eb !important;
+    border-radius: 12px !important;
+    padding: 14px 18px !important;
+    font-size: 15px !important;
+    background: #fafafa !important;
+    transition: all 0.2s ease !important;
+}
+
+.filter-input:hover,
+.filter-select:hover {
+    border-color: #d1d5db !important;
+    background: white !important;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+    border-color: #0b8f8f !important;
+    background: white !important;
+    box-shadow: 0 0 0 4px rgba(11, 143, 143, 0.08) !important;
+}
+
+/* Enhanced Table Container */
+.results-table {
+    background: white !important;
+    border-radius: 16px !important;
+    padding: 24px !important;
+    box-shadow: 0 2px 12px rgba(11, 143, 143, 0.08) !important;
+    border: 1px solid rgba(11, 143, 143, 0.08) !important;
+}
+
+/* Modern Table Headers */
+thead th {
+    background: linear-gradient(135deg, #f8feff 0%, #eef9f9 100%) !important;
+    color: #0b8f8f !important;
+    font-weight: 700 !important;
+    font-size: 12px !important;
+    letter-spacing: 1px !important;
+    padding: 16px !important;
+}
+
+/* Enhanced Table Rows */
+tbody tr:hover {
+    background: linear-gradient(90deg, #f8feff 0%, #ffffff 100%) !important;
+    box-shadow: 0 2px 8px rgba(11, 143, 143, 0.06);
+}
+
+tbody td {
+    padding: 16px !important;
+    color: #374151 !important;
+}
+
+tbody td strong {
+    color: #1f2937 !important;
+    font-weight: 600 !important;
+}
+
+/* Modern View Button */
+.view-btn {
+    background: linear-gradient(135deg, #0b8f8f 0%, #0ea6a6 100%) !important;
+    border-radius: 10px !important;
+    padding: 10px 20px !important;
+    box-shadow: 0 2px 8px rgba(11, 143, 143, 0.2) !important;
+}
+
+.view-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(11, 143, 143, 0.3) !important;
+}
+
+/* Enhanced Badges */
+.badge {
+    padding: 6px 14px !important;
+    border-radius: 8px !important;
+    letter-spacing: 0.3px !important;
+}
+
+.badge-primary {
+    background: linear-gradient(135deg, rgba(11, 143, 143, 0.1) 0%, rgba(14, 166, 166, 0.15) 100%) !important;
+    border: 1px solid rgba(11, 143, 143, 0.2);
+}
+
+.badge-secondary {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.15) 100%) !important;
+    color: #059669 !important;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+/* Enhanced Modal */
+.modal {
+    background: rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(8px) !important;
+}
+
+.modal-content {
+    border-radius: 20px !important;
+    padding: 36px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-close {
+    background: #f3f4f6 !important;
+    color: #6b7280 !important;
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 24px !important;
+}
+
+.modal-close:hover {
+    background: #0b8f8f !important;
+    color: white !important;
+    transform: rotate(90deg) !important;
+}
+
+/* Enhanced Empty State */
+.empty-state {
+    padding: 80px 20px !important;
+}
+
+.empty-state h3 {
+    color: #4b5563 !important;
+    font-size: 20px !important;
+}
+
+.empty-state p {
+    color: #9ca3af !important;
+    font-size: 15px !important;
+}
+
+.empty-state svg {
+    width: 96px !important;
+    height: 96px !important;
+    opacity: 0.4 !important;
+}
+
+/* Enhanced Spinner */
+.spinner {
+    border: 4px solid #e5e7eb !important;
+    border-top: 4px solid #0b8f8f !important;
+    width: 48px !important;
+    height: 48px !important;
+    animation: spin 0.8s linear infinite !important;
+}
