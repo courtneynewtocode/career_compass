@@ -289,39 +289,39 @@ class CareerCompassApp {
   /**
    * Render a question page
    */
-  renderPage(index) {
+  async renderPage(index) {
     this.currentPage = index;
     this.saveState();
 
     // Track page view
     Analytics.trackPageView(index, 'question');
 
-    // Fade in the page
+    // Animate page transition
     const pageContent = document.getElementById('page-content');
-    Loading.fadeIn(pageContent);
-
-    Renderer.renderQuestionPage(
-      this.testData,
-      index,
-      this.pages,
-      this.answers,
-      {
-        onNext: () => {
-          if (index + 1 < this.pages.length) {
-            this.renderPage(index + 1);
-          } else {
-            this.renderResults();
-          }
-        },
-        onBack: () => {
-          if (index === 0) {
-            this.renderIntro();
-          } else {
-            this.renderPage(index - 1);
+    await Loading.transition(pageContent, () => {
+      Renderer.renderQuestionPage(
+        this.testData,
+        index,
+        this.pages,
+        this.answers,
+        {
+          onNext: () => {
+            if (index + 1 < this.pages.length) {
+              this.renderPage(index + 1);
+            } else {
+              this.renderResults();
+            }
+          },
+          onBack: () => {
+            if (index === 0) {
+              this.renderIntro();
+            } else {
+              this.renderPage(index - 1);
+            }
           }
         }
-      }
-    );
+      );
+    });
   }
 
   /**

@@ -81,6 +81,47 @@ const Loading = {
   },
 
   /**
+   * Transition between pages with slide animation
+   * @param {HTMLElement} element - Element to transition
+   * @param {Function} callback - Function to run during transition
+   */
+  async transition(element, callback) {
+    if (!element) {
+      if (callback) callback();
+      return;
+    }
+
+    // Fade out current content
+    element.classList.add('page-fade-exit');
+    element.classList.add('page-fade-exit-active');
+
+    // Wait for exit animation
+    await new Promise(resolve => setTimeout(resolve, 250));
+
+    // Update content
+    if (callback) callback();
+
+    // Remove exit classes
+    element.classList.remove('page-fade-exit');
+    element.classList.remove('page-fade-exit-active');
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Fade in new content
+    element.classList.add('page-fade-enter');
+    requestAnimationFrame(() => {
+      element.classList.add('page-fade-enter-active');
+
+      // Clean up after animation
+      setTimeout(() => {
+        element.classList.remove('page-fade-enter');
+        element.classList.remove('page-fade-enter-active');
+      }, 300);
+    });
+  },
+
+  /**
    * Remove loading overlay from DOM
    */
   destroy() {
