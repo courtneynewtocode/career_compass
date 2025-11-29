@@ -457,12 +457,12 @@ const Dashboard = {
       <div style="margin-bottom: 30px;">
         <h3 style="color: var(--accent); margin-bottom: 16px;">Student Details</h3>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
-          ${testData.demographics.fields.map(field => `
+          ${testData.demographics?.fields?.map(field => `
             <div class="metric">
               <strong>${field.label}</strong>
               <div class="small-muted">${this.escapeHtml(demographics[field.key] || '-')}</div>
             </div>
-          `).join('')}
+          `).join('') || '<div class="metric"><strong>No demographic fields defined</strong></div>'}
           <div class="metric">
             <strong>Completion Time</strong>
             <div class="small-muted">${this.formatDuration(result.completionTime)}</div>
@@ -487,13 +487,13 @@ const Dashboard = {
             <div style="flex:1" class="top-clusters">
               <h4>Top 3</h4>
               <ol>
-                ${section.top3.map(item => `<li>${item.title} (Total: ${item.total})</li>`).join('')}
+                ${section.top3?.map(item => `<li>${item.title} (Total: ${item.total})</li>`).join('') || '<li>No data available</li>'}
               </ol>
             </div>
             <div style="flex:1" class="low-clusters">
               <h4>${section.bottom3 ? 'Bottom 3' : 'Bottom 2'}</h4>
               <ol>
-                ${section[bottomKey].map(item => `<li>${item.title} (Total: ${item.total})</li>`).join('')}
+                ${section[bottomKey]?.map(item => `<li>${item.title} (Total: ${item.total})</li>`).join('') || '<li>No data available</li>'}
               </ol>
             </div>
           </div>
