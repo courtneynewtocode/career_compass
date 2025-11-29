@@ -794,7 +794,19 @@ class CareerCompassApp {
       // Clone the element to avoid modifying the original
       const clone = pageContent.cloneNode(true);
 
-      // Add PDF-specific styling to make text much smaller to fit all content
+      // Create a fixed-width wrapper for consistent PDF output
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = `
+        width: 800px;
+        position: absolute;
+        left: -9999px;
+        top: 0;
+        background: white;
+      `;
+      wrapper.appendChild(clone);
+      document.body.appendChild(wrapper);
+
+      // Add PDF-specific styling (matching test-pdf.html)
       const style = document.createElement('style');
       style.textContent = `
         .btn {
@@ -807,14 +819,15 @@ class CareerCompassApp {
           min-height: auto !important;
         }
 
-        /* Prevent page break after header */
-        .container, #page-content > div:first-child {
-          page-break-after: avoid !important;
-        }
-
         /* Hide clusters image */
         img[src*="clusters.png"] {
           display: none !important;
+        }
+
+        /* Ensure sections have some spacing but try to keep them together */
+        h3 {
+          margin-top: 20px !important;
+          padding-top: 10px !important;
         }
       `;
       clone.insertBefore(style, clone.firstChild);
@@ -843,7 +856,7 @@ class CareerCompassApp {
 
       console.log('📊 Total sections in PDF:', allH3.length);
 
-      // Configure html2pdf options
+      // Configure html2pdf options (matching test-pdf.html)
       const options = {
         margin: [5, 5, 5, 5],
         filename: `${this.demographics.studentName || 'Student'}_${this.testData.testName}_Report.pdf`,
@@ -857,7 +870,8 @@ class CareerCompassApp {
           logging: false,
           allowTaint: true,
           backgroundColor: '#ffffff',
-          windowHeight: 4000
+          windowHeight: 4000,
+          width: 800
         },
         jsPDF: {
           unit: 'mm',
@@ -865,12 +879,18 @@ class CareerCompassApp {
           orientation: 'portrait',
           compress: true
         },
+        pagebreak: {
+          mode: ['css', 'legacy']
+        }
       };
 
       // Generate PDF using lazy-loaded library
       const pdfBlob = await PdfLoader.generatePdf(clone, options);
 
       console.log('✅ PDF generated successfully, size:', Math.round(pdfBlob.size / 1024), 'KB');
+
+      // Clean up the temporary wrapper
+      document.body.removeChild(wrapper);
 
       Loading.hide();
       return pdfBlob;
