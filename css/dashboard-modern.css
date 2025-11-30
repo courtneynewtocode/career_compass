@@ -4,6 +4,8 @@
 body {
     background: linear-gradient(135deg, #f5f7fa 0%, #e8f4f4 100%) !important;
     min-height: 100vh;
+    padding: 0 !important;
+    display: block !important;
 }
 
 /* Layout Grid */

@@ -49,9 +49,10 @@ const PdfLoader = {
    * Generate PDF from HTML element
    * @param {HTMLElement} element - Element to convert to PDF
    * @param {Object} options - html2pdf options
+   * @param {Boolean} download - If true, directly download the PDF instead of returning blob
    * @returns {Promise<Blob>}
    */
-  async generatePdf(element, options = {}) {
+  async generatePdf(element, options = {}, download = false) {
     try {
       // Ensure library is loaded
       await this.load();
@@ -62,12 +63,21 @@ const PdfLoader = {
       }
 
       // Generate PDF
-      const pdfBlob = await html2pdf()
-        .set(options)
-        .from(element)
-        .outputPdf('blob');
-
-      return pdfBlob;
+      if (download) {
+        // Direct download
+        await html2pdf()
+          .set(options)
+          .from(element)
+          .save();
+        return null;
+      } else {
+        // Return blob
+        const pdfBlob = await html2pdf()
+          .set(options)
+          .from(element)
+          .outputPdf('blob');
+        return pdfBlob;
+      }
     } catch (error) {
       console.error('PDF generation error:', error);
       throw error;

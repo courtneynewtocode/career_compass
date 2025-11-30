@@ -251,21 +251,38 @@
       margin-bottom: 20px;
       opacity: 0.3;
     }
+
+    /* Responsive button layout */
+    @media (max-width: 700px) {
+      .view-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        margin-right: 4px !important;
+      }
+
+      tbody td:last-child {
+        white-space: nowrap;
+      }
+    }
   </style>
 </head>
 
 <body>
   <header
-    style="background: linear-gradient(135deg, #ffffff 0%, #f8fcfc 100%); box-shadow: 0 2px 16px rgba(11, 143, 143, 0.1); padding: 20px 24px; margin-bottom: 32px; border-bottom: 1px solid rgba(11, 143, 143, 0.08);">
+    style="background: linear-gradient(135deg, #ffffff 0%, #f8fcfc 100%); box-shadow: 0 2px 16px rgba(11, 143, 143, 0.1); padding: 20px 24px; margin: 0 0 32px 0; border-bottom: 1px solid rgba(11, 143, 143, 0.08); width: 100%;">
     <div style="max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
       <h1
         style="margin: 0; font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #0b8f8f 0%, #0ea6a6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
         📊 Assessment Results Dashboard</h1>
-      <div style="display: flex; gap: 12px;">
-        <button onclick="Dashboard.refreshData()" class="btn secondary" style="text-decoration: none;">🔄
+      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <button onclick="Dashboard.refreshData()" class="btn secondary"
+          style="color: var(--accent); text-decoration: none;">🔄
           Refresh</button>
-        <a href="index.html" class="btn secondary" style="text-decoration: none;">← Back to Home</a>
-        <button onclick="DashboardAuth.logout()" class="btn secondary" style="text-decoration: none;">🔒 Logout</button>
+        <a href="index.html" class="btn secondary"
+          style="color: var(--accent); text-decoration: none; display: inline-flex; align-items: center;">← Back to
+          Home</a>
+        <button onclick="DashboardAuth.logout()" class="btn secondary"
+          style="color: var(--accent); text-decoration: none;">🔒 Logout</button>
       </div>
     </div>
   </header>
@@ -393,6 +410,8 @@
   <script src="js/dialog.js"></script>
   <script src="js/scoring.js"></script>
   <script src="js/renderer.js"></script>
+  <script src="js/loading.js"></script>
+  <script src="js/pdf-loader.js"></script>
   <script src="js/dashboard-auth.js"></script>
   <script src="js/dashboard.js"></script>
 

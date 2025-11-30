@@ -371,7 +371,8 @@ const Dashboard = {
           <td>${this.escapeHtml(email)}</td>
           <td>${duration}</td>
           <td>
-            <button class="view-btn" onclick="Dashboard.viewResult(${index})" style="background: #0b8f8f; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;">View</button>
+            <button class="view-btn" onclick="Dashboard.viewResult(${index})" style="background: #0b8f8f; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; margin-right: 8px;">View</button>
+            <button class="view-btn" onclick="Dashboard.exportResultPdf(${index})" style="background: #102e7a; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;">📄 PDF</button>
           </td>
         </tr>
       `;
@@ -436,6 +437,119 @@ const Dashboard = {
     } catch (error) {
       console.error('Error loading result:', error);
       await Dialog.showAlert('Failed to load result details.', 'Error');
+    }
+  },
+
+  /**
+   * Export result as PDF
+   */
+  async exportResultPdf(index) {
+    const result = this.filteredResults[index];
+
+    if (!result) {
+      await Dialog.showAlert('Result not found.', 'Error');
+      return;
+    }
+
+    try {
+      // Load PDF library
+      Loading.show('Generating PDF...', 'Please wait');
+      await PdfLoader.load();
+
+      // Load the test definition
+      const testResponse = await fetch(`tests/${result.testId}.json`);
+      const testData = await testResponse.json();
+
+      // Create a container with the result content
+      const container = document.createElement('div');
+      container.style.cssText = `
+        width: 800px;
+        position: absolute;
+        left: -9999px;
+        top: 0;
+        background: white;
+        padding: 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      `;
+
+      // Render the result detail
+      container.innerHTML = this.renderResultDetail(testData, result);
+      document.body.appendChild(container);
+
+      // Add PDF-specific styling
+      const style = document.createElement('style');
+      style.textContent = `
+        h3 {
+          margin-top: 20px !important;
+          padding-top: 10px !important;
+          color: #0b8f8f !important;
+        }
+        .metric {
+          padding: 8px;
+          background: #f8feff;
+          border-radius: 8px;
+          margin-bottom: 8px;
+        }
+        .top-clusters {
+          background-color: rgba(148, 196, 148, 0.3);
+          padding: 12px;
+          border-radius: 10px;
+        }
+        .neutral-clusters {
+          background-color: rgba(128, 128, 128, 0.12);
+          padding: 12px;
+          border-radius: 10px;
+        }
+        .low-clusters {
+          background-color: rgba(171, 127, 119, 0.2);
+          padding: 12px;
+          border-radius: 10px;
+        }
+      `;
+      container.insertBefore(style, container.firstChild);
+
+      // Configure PDF options
+      const studentName = result.demographics?.studentName || 'Student';
+      const options = {
+        margin: [10, 10, 10, 10],
+        filename: `${studentName.replace(/[^a-zA-Z0-9]/g, '_')}_${testData.testName.replace(/[^a-zA-Z0-9]/g, '_')}_Report.pdf`,
+        image: {
+          type: 'jpeg',
+          quality: 0.95
+        },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          windowHeight: 4000,
+          width: 800
+        },
+        jsPDF: {
+          unit: 'mm',
+          format: 'a4',
+          orientation: 'portrait',
+          compress: true
+        },
+        pagebreak: {
+          mode: ['css', 'legacy']
+        }
+      };
+
+      // Generate and download PDF
+      await PdfLoader.generatePdf(container, options, true); // true = download directly
+
+      // Clean up
+      document.body.removeChild(container);
+      Loading.hide();
+
+      console.log('✅ PDF exported successfully');
+
+    } catch (error) {
+      console.error('❌ PDF export error:', error);
+      Loading.hide();
+      await Dialog.showAlert('Failed to export PDF. Please try again.', 'Error');
     }
   },
 
