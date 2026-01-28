@@ -87,17 +87,23 @@ const PdfLoader = {
     const pxPerMM = canvasW / contentWidthMM;
     const pageHeightPx = contentHeightMM * pxPerMM;
 
-    // Collect protected element boundaries in canvas pixel space
-    const wrapperRect = element.parentElement
-      ? element.parentElement.getBoundingClientRect()
-      : element.getBoundingClientRect();
+    // Collect protected element boundaries in canvas pixel space.
+    // Protect all direct children of .no-break sections (report section wrappers)
+    // plus any explicitly-classed elements. This ensures no content block — including
+    // plain description text divs — gets sliced at a page boundary.
     const domScale = canvasH / element.getBoundingClientRect().height;
     const elRect = element.getBoundingClientRect();
     const PADDING = 8;
-    const H3_KEEP_WITH_NEXT = 120;
+    const H3_KEEP_WITH_NEXT = 400;
     const protectedRanges = [];
 
-    element.querySelectorAll('.guidance-box, .info-box, .cluster-group, .two-col, h3, table').forEach(el => {
+    // Select all direct children of section wrappers + known block elements
+    const protectedEls = new Set();
+    element.querySelectorAll('.no-break > *, .guidance-box, .info-box, .cluster-group, .two-col, h3, table').forEach(el => {
+      protectedEls.add(el);
+    });
+
+    protectedEls.forEach(el => {
       const rect = el.getBoundingClientRect();
       if (rect.height === 0) return;
       const top = (rect.top - elRect.top) * domScale - PADDING;

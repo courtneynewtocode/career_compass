@@ -262,12 +262,12 @@ const Renderer = {
 
     let html = `
       <div>
-        <div class="container" style="position: relative; display: flex; align-items: center; margin-bottom: 24px; min-height: 80px;">
+        <div class="container" style="position: relative; margin-bottom: 24px; min-height: 80px; padding-right: 190px;">
           <img src="assets/cga-logo.jpg" alt="CGA Global" style="position: absolute; top: 0; right: 0; width: 180px; height: auto;" />
+          <h2 style="margin: 0;">${testData.testName} : Student Report</h2>
+          <p>The report below now provides you with a deeper understanding of your <em>True North</em> — the direction that aligns your unique potential and purpose.</p>
+          <p>Please use this report as a <strong>guide</strong> in your career decision-making journey. Know that your interests and potential can and most likely will change, depending on what you expose yourself to.</p>
         </div>
-        <h2 style="margin: 0;">${testData.testName} : Student Report</h2>
-        <p>The report below now provides you with a deeper understanding of your <em>True North</em> — the direction that aligns your unique potential and purpose.</p>
-        <p>Please use this report as a <strong>guide</strong> in your career decision-making journey. Know that your interests and potential can and most likely will change, depending on what you expose yourself to.</p>
       </div>
 
       <div class="report" id="report-area" style="margin-top:12px">

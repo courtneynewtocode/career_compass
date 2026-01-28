@@ -132,14 +132,24 @@ const Scoring = {
    * Get top N items from a list of scored items
    */
   getTopN(items, n = 3) {
-    return [...items].sort((a, b) => b.total - a.total || a.name.localeCompare(b.name)).slice(0, n);
+    return [...items].sort((a, b) => {
+      if (b.total !== a.total) return b.total - a.total;
+      const aLabel = a.name || a.title || '';
+      const bLabel = b.name || b.title || '';
+      return aLabel.localeCompare(bLabel);
+    }).slice(0, n);
   },
 
   /**
    * Get bottom N items from a list of scored items
    */
   getBottomN(items, n = 3) {
-    return [...items].sort((a, b) => a.total - b.total || a.name.localeCompare(b.name)).slice(0, n);
+    return [...items].sort((a, b) => {
+      if (a.total !== b.total) return a.total - b.total;
+      const aLabel = a.name || a.title || '';
+      const bLabel = b.name || b.title || '';
+      return aLabel.localeCompare(bLabel);
+    }).slice(0, n);
   },
 
   /**
