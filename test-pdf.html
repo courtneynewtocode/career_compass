@@ -12,8 +12,9 @@
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/report.css">
 
-  <!-- html2pdf.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- html2canvas + jsPDF (loaded separately for custom page slicing) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
     body {
@@ -162,7 +163,12 @@
       console.log('✅ Report rendered');
     }
 
-    // Generate PDF
+    // Generate PDF using smart canvas slicing (html2canvas + jsPDF directly)
+    // Instead of html2pdf's blind page slicing, we:
+    // 1. Render the full report as one canvas
+    // 2. Collect protected element boundaries from the canvas
+    // 3. Find safe cut positions (gaps between elements) near each page boundary
+    // 4. Slice the canvas at safe positions and add each slice as a PDF page
     async function generatePdf() {
       showStatus('Generating PDF, please wait...', 'info');
 
@@ -188,39 +194,42 @@
           display: none !important;
         }
 
-        /* Make header/intro very compact */
         .container {
           margin-bottom: 3px !important;
           min-height: auto !important;
         }
 
-        /* Hide clusters image */
         img[src*="clusters.png"] {
           display: none !important;
         }
 
-        // .no-break {
-        //   break-inside: avoid !important;
-        //   page-break-inside: avoid !important;
-        // }
+        .no-break {
+          padding-top: 0 !important;
+        }
 
-        /* Ensure sections have some spacing but try to keep them together */
+        .guidance-box,
+        .info-box {
+          display: block !important;
+          overflow: hidden !important;
+        }
+
+        .guidance-box > img,
+        .info-box > img {
+          float: left !important;
+          margin-right: 12px !important;
+        }
+
         h3 {
-          margin-top: 20px !important;
-          padding-top: 10px !important;
+          margin-top: 0 !important;
+          padding-top: 30px !important;
         }
       `;
       clone.insertBefore(style, clone.firstChild);
 
       // Hide Report Summary section from PDF
-      const allH3 = clone.querySelectorAll('h3');
-      allH3.forEach((h3) => {
-        const sectionText = h3.textContent.toLowerCase();
-
-        // Hide Report Summary from PDF
-        if (sectionText.includes('report summary')) {
+      clone.querySelectorAll('h3').forEach((h3) => {
+        if (h3.textContent.toLowerCase().includes('report summary')) {
           h3.style.display = 'none';
-          // Hide the table after it
           let nextEl = h3.nextElementSibling;
           while (nextEl) {
             if (nextEl.tagName === 'TABLE') {
@@ -229,50 +238,123 @@
             }
             nextEl = nextEl.nextElementSibling;
           }
-          console.log('✅ Hidden Report Summary from PDF');
         }
       });
 
-      const options = {
-        margin: [5, 5, 5, 5],
-        filename: `Test_Report_${Date.now()}.pdf`,
-        image: {
-          type: 'jpeg',
-          quality: 0.95
-        },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          allowTaint: true,
-          backgroundColor: '#ffffff',
-          windowHeight: 4000,
-          width: 800,
-        },
-        jsPDF: {
-          unit: 'mm',
-          format: 'a4',
-          orientation: 'portrait',
-          compress: true
-        },
-        pagebreak: {
-          mode: ['css', 'legacy']
-        }
+      // --- Smart canvas slicing ---
+      const h2cOptions = {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        windowHeight: 4000,
+        width: 800
       };
 
-      try {
-        await html2pdf()
-          .set(options)
-          .from(clone)
-          .save();
+      // Step 1: Render full report as one canvas
+      const canvas = await html2canvas(clone, h2cOptions);
+      const canvasW = canvas.width;
+      const canvasH = canvas.height;
 
+      // Step 2: Calculate page dimensions in canvas pixels
+      // A4 = 210mm x 297mm, margins = 5mm each side → content: 200mm x 287mm
+      const contentWidthMM = 200;
+      const contentHeightMM = 287;
+      const pxPerMM = canvasW / contentWidthMM;
+      const pageHeightPx = contentHeightMM * pxPerMM;
+
+      // DOM-to-canvas scale factor
+      const wrapperRect = wrapper.getBoundingClientRect();
+      const domScale = canvasH / wrapperRect.height;
+
+      console.log(`📐 Smart slice: canvas=${canvasW}x${canvasH}, pageHeight=${Math.round(pageHeightPx)}px, domScale=${domScale.toFixed(3)}`);
+
+      // Step 3: Collect protected element boundaries in canvas pixel space
+      const PADDING = 8; // extra padding around elements (in canvas px)
+      const protectedRanges = [];
+
+      // H3 headings get extra "keep with next" padding so they aren't orphaned
+      // at the bottom of a page without any following content
+      const H3_KEEP_WITH_NEXT = 120; // canvas px of content required after h3
+
+      clone.querySelectorAll('.guidance-box, .info-box, .cluster-group, .two-col, h3, table').forEach(el => {
+        const rect = el.getBoundingClientRect();
+        if (rect.height === 0) return; // skip hidden elements
+        const top = (rect.top - wrapperRect.top) * domScale - PADDING;
+        const extraBottom = el.tagName === 'H3' ? H3_KEEP_WITH_NEXT : PADDING;
+        const bottom = (rect.top - wrapperRect.top + rect.height) * domScale + extraBottom;
+        protectedRanges.push({ top: Math.max(0, top), bottom: Math.min(canvasH, bottom), el: el.tagName + '.' + el.className.split(' ')[0] });
+      });
+
+      console.log(`📋 Protected ranges: ${protectedRanges.length} elements`);
+
+      // Step 4: Find safe cut positions
+      const cuts = [0];
+      let nextBoundary = pageHeightPx;
+
+      while (nextBoundary < canvasH - 50) {
+        // Find protected ranges that straddle this page boundary
+        const straddling = protectedRanges.filter(r => r.top < nextBoundary && r.bottom > nextBoundary);
+
+        let cutAt;
+        if (straddling.length === 0) {
+          // No element straddles the boundary — safe to cut here
+          cutAt = nextBoundary;
+          console.log(`✂️ Page ${cuts.length}: cut at boundary ${Math.round(cutAt)}px (clean)`);
+        } else {
+          // Cut just before the topmost straddling element
+          cutAt = Math.min(...straddling.map(r => r.top));
+          const minCut = cuts[cuts.length - 1] + pageHeightPx * 0.33;
+          if (cutAt < minCut) {
+            // Element is too close to the previous cut — force cut at boundary
+            cutAt = nextBoundary;
+            console.log(`✂️ Page ${cuts.length}: forced cut at ${Math.round(cutAt)}px (element too large)`);
+          } else {
+            console.log(`✂️ Page ${cuts.length}: cut at ${Math.round(cutAt)}px (avoiding ${straddling.map(r => r.el).join(', ')})`);
+          }
+        }
+
+        cuts.push(cutAt);
+        nextBoundary = cutAt + pageHeightPx;
+      }
+      cuts.push(canvasH);
+
+      console.log(`📄 Total pages: ${cuts.length - 1}`);
+
+      // Step 5: Create PDF with jsPDF, adding each canvas slice as a page
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+
+      for (let i = 0; i < cuts.length - 1; i++) {
+        const y0 = cuts[i];
+        const y1 = cuts[i + 1];
+        const sliceH = y1 - y0;
+        if (sliceH <= 0) continue;
+
+        // Create a canvas slice
+        const sliceCanvas = document.createElement('canvas');
+        sliceCanvas.width = canvasW;
+        sliceCanvas.height = Math.ceil(sliceH);
+        sliceCanvas.getContext('2d').drawImage(
+          canvas, 0, y0, canvasW, sliceH, 0, 0, canvasW, Math.ceil(sliceH)
+        );
+
+        if (i > 0) pdf.addPage();
+
+        const imgData = sliceCanvas.toDataURL('image/jpeg', 0.95);
+        const imgHeightMM = sliceH / pxPerMM;
+        pdf.addImage(imgData, 'JPEG', 5, 5, contentWidthMM, imgHeightMM);
+      }
+
+      try {
+        pdf.save(`Test_Report_${Date.now()}.pdf`);
         showStatus('PDF downloaded successfully!', 'success');
         console.log('✅ PDF generated and downloaded');
       } catch (error) {
         showStatus('Error generating PDF: ' + error.message, 'error');
         console.error('❌ PDF generation error:', error);
       } finally {
-        // Clean up the temporary wrapper
         document.body.removeChild(wrapper);
       }
     }

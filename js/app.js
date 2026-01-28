@@ -806,42 +806,49 @@ class CareerCompassApp {
       wrapper.appendChild(clone);
       document.body.appendChild(wrapper);
 
-      // Add PDF-specific styling (matching test-pdf.html)
+      // Add PDF-specific styling
       const style = document.createElement('style');
       style.textContent = `
         .btn {
           display: none !important;
         }
 
-        /* Make header/intro very compact */
         .container {
           margin-bottom: 3px !important;
           min-height: auto !important;
         }
 
-        /* Hide clusters image */
         img[src*="clusters.png"] {
           display: none !important;
         }
 
-        /* Ensure sections have some spacing but try to keep them together */
+        .no-break {
+          padding-top: 0 !important;
+        }
+
+        .guidance-box,
+        .info-box {
+          display: block !important;
+          overflow: hidden !important;
+        }
+
+        .guidance-box > img,
+        .info-box > img {
+          float: left !important;
+          margin-right: 12px !important;
+        }
+
         h3 {
-          margin-top: 20px !important;
-          padding-top: 10px !important;
+          margin-top: 0 !important;
+          padding-top: 30px !important;
         }
       `;
       clone.insertBefore(style, clone.firstChild);
 
       // Hide Report Summary section from PDF
-      const allH3 = clone.querySelectorAll('h3');
-
-      allH3.forEach((h3) => {
-        const sectionText = h3.textContent.toLowerCase();
-
-        // Hide Report Summary from PDF
-        if (sectionText.includes('report summary')) {
+      clone.querySelectorAll('h3').forEach((h3) => {
+        if (h3.textContent.toLowerCase().includes('report summary')) {
           h3.style.display = 'none';
-          // Hide the table after it
           let nextEl = h3.nextElementSibling;
           while (nextEl) {
             if (nextEl.tagName === 'TABLE') {
@@ -854,38 +861,8 @@ class CareerCompassApp {
         }
       });
 
-      console.log('📊 Total sections in PDF:', allH3.length);
-
-      // Configure html2pdf options (matching test-pdf.html)
-      const options = {
-        margin: [5, 5, 5, 5],
-        filename: `${this.demographics.studentName || 'Student'}_${this.testData.testName}_Report.pdf`,
-        image: {
-          type: 'jpeg',
-          quality: 0.95
-        },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          allowTaint: true,
-          backgroundColor: '#ffffff',
-          windowHeight: 4000,
-          width: 800
-        },
-        jsPDF: {
-          unit: 'mm',
-          format: 'a4',
-          orientation: 'portrait',
-          compress: true
-        },
-        pagebreak: {
-          mode: ['css', 'legacy']
-        }
-      };
-
-      // Generate PDF using lazy-loaded library
-      const pdfBlob = await PdfLoader.generatePdf(clone, options);
+      // Generate PDF using smart canvas slicing (via PdfLoader)
+      const pdfBlob = await PdfLoader.generatePdf(clone);
 
       console.log('✅ PDF generated successfully, size:', Math.round(pdfBlob.size / 1024), 'KB');
 
