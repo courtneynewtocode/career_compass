@@ -34,7 +34,7 @@ const Config = {
    * - true: Generate PDF client-side and attach to email
    * - false: Send simple email without PDF attachment
    *
-   * Note: PDF is generated in the browser using html2pdf.js
+   * Note: PDF is generated in the browser using html2canvas + jsPDF
    */
   attachPdfReport: true,
 

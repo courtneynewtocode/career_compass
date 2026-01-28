@@ -49,7 +49,7 @@ The application uses a modular architecture with separated concerns:
 8. **error-handler.js** - Global error boundary + retry mechanisms
 9. **analytics.js** - Event tracking (file-based analytics)
 10. **loading.js** - Loading overlays and page transitions
-11. **pdf-loader.js** - Lazy-loading for html2pdf.js (~200KB saved on initial load)
+11. **pdf-loader.js** - Lazy-loading for html2canvas + jsPDF with smart canvas slicing
 12. **dashboard.js** - Dashboard logic (results table, filtering, sorting)
 13. **dashboard-auth.js** - Session-based authentication
 
@@ -66,7 +66,7 @@ The application uses a modular architecture with separated concerns:
    - Validates response patterns (fraud detection)
    - Calculates scores using `scoring.js`
    - Generates report HTML
-   - Lazy-loads html2pdf.js and generates PDF
+   - Lazy-loads html2canvas + jsPDF and generates PDF with smart page-break slicing
    - Sends email with PDF attachment (via mailer API)
    - Stores results to `data/results/` (if enabled)
    - Tracks completion event in analytics

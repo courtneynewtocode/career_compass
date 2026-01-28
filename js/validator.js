@@ -261,7 +261,7 @@ const Validator = {
       };
     }
 
-    // Check 2: Excessive use of middle option (e.g., >80% are 3's on a 1-5 scale)
+    // Check 2: Excessive use of same option (e.g., >95% are the same value on a 1-5 scale)
     const answerCounts = {};
     allAnswers.forEach(answer => {
       answerCounts[answer] = (answerCounts[answer] || 0) + 1;

@@ -54,39 +54,39 @@ const Scoring = {
       case 'sum':
         result.total = this.calculateSum(answers);
         result.count = answers.length;
-        result.avg = answers.length > 0 ? (result.total / answers.length).toFixed(2) : 0;
+        result.avg = answers.length > 0 ? Math.round((result.total / answers.length) * 100) / 100 : 0;
         break;
 
       case 'average':
         result.total = this.calculateSum(answers);
         result.count = answers.length;
-        result.avg = answers.length > 0 ? (result.total / answers.length).toFixed(2) : 0;
+        result.avg = answers.length > 0 ? Math.round((result.total / answers.length) * 100) / 100 : 0;
         break;
 
       case 'weighted':
         result.total = this.calculateWeightedSum(answers, scoring.weights);
         result.count = answers.length;
-        result.avg = answers.length > 0 ? (result.total / answers.length).toFixed(2) : 0;
+        result.avg = answers.length > 0 ? Math.round((result.total / answers.length) * 100) / 100 : 0;
         break;
 
       case 'cluster':
         result.clusters = this.calculateClusters(answers, scoring.clusterIndices);
         result.total = this.calculateSum(answers);
         result.count = answers.length;
-        result.avg = answers.length > 0 ? (result.total / answers.length).toFixed(2) : 0;
+        result.avg = answers.length > 0 ? Math.round((result.total / answers.length) * 100) / 100 : 0;
         break;
 
       case 'reverse':
         const reversed = answers.map(a => a ? (6 - a) : 0);
         result.total = this.calculateSum(reversed);
         result.count = reversed.length;
-        result.avg = reversed.length > 0 ? (result.total / reversed.length).toFixed(2) : 0;
+        result.avg = reversed.length > 0 ? Math.round((result.total / reversed.length) * 100) / 100 : 0;
         break;
 
       default:
         result.total = this.calculateSum(answers);
         result.count = answers.length;
-        result.avg = answers.length > 0 ? (result.total / answers.length).toFixed(2) : 0;
+        result.avg = answers.length > 0 ? Math.round((result.total / answers.length) * 100) / 100 : 0;
     }
 
     return result;
@@ -116,13 +116,13 @@ const Scoring = {
     return clusterIndices.map(cluster => {
       const clusterAnswers = cluster.indices.map(idx => answers[idx] || 0);
       const total = this.calculateSum(clusterAnswers);
-      const avg = (total / clusterAnswers.length).toFixed(2);
+      const avg = Math.round((total / clusterAnswers.length) * 100) / 100;
 
       return {
         name: cluster.name,
         indices: cluster.indices,
         total: total,
-        avg: parseFloat(avg),
+        avg: avg,
         count: clusterAnswers.length
       };
     });
@@ -132,14 +132,14 @@ const Scoring = {
    * Get top N items from a list of scored items
    */
   getTopN(items, n = 3) {
-    return [...items].sort((a, b) => b.total - a.total).slice(0, n);
+    return [...items].sort((a, b) => b.total - a.total || a.name.localeCompare(b.name)).slice(0, n);
   },
 
   /**
    * Get bottom N items from a list of scored items
    */
   getBottomN(items, n = 3) {
-    return [...items].sort((a, b) => a.total - b.total).slice(0, n);
+    return [...items].sort((a, b) => a.total - b.total || a.name.localeCompare(b.name)).slice(0, n);
   },
 
   /**

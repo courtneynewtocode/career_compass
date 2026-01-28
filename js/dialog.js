@@ -112,9 +112,11 @@ const Dialog = {
       white-space: pre-wrap;
     `;
 
-    // Handle both plain text and HTML
+    // Handle both plain text and HTML (sanitized to safe tags only)
     if (message.includes('<')) {
-      messageEl.innerHTML = message;
+      // Strip everything except safe formatting tags
+      const sanitized = message.replace(/<(?!\/?(?:strong|em|br|b|i)\b)[^>]*>/gi, '');
+      messageEl.innerHTML = sanitized;
     } else {
       messageEl.textContent = message;
     }

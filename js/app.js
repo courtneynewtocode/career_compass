@@ -403,17 +403,20 @@ class CareerCompassApp {
       await this.saveResults();
     } else {
       // Don't show results to user - render off-screen for email, then show completion
-      // Render results to hidden container for email HTML generation
+      // Use a unique ID so it doesn't shadow the real page-content
       const tempContainer = document.createElement('div');
       tempContainer.id = 'temp-report-container';
       tempContainer.style.display = 'none';
       document.body.appendChild(tempContainer);
 
-      // Temporarily swap page-content
-      const originalContent = document.getElementById('page-content');
       const tempContent = document.createElement('div');
-      tempContent.id = 'page-content';
+      tempContent.id = 'temp-page-content';
       tempContainer.appendChild(tempContent);
+
+      // Temporarily redirect Renderer output to temp container
+      const originalContent = document.getElementById('page-content');
+      if (originalContent) originalContent.id = '_page-content-original';
+      tempContent.id = 'page-content';
 
       // Render results to temp container
       Renderer.renderResults(this.testData, reportData, {
@@ -421,8 +424,12 @@ class CareerCompassApp {
         onRestart: () => {}
       });
 
-      // Send email (uses the temp rendered HTML)
-      await this.sendEmailReport();
+      // Restore original ID before PDF generation so generatePdfBlob finds the temp content
+      tempContent.id = 'temp-page-content';
+      if (originalContent) originalContent.id = 'page-content';
+
+      // Send email (pass temp content element directly for PDF generation)
+      await this.sendEmailReport(tempContent);
 
       // Save results to storage
       await this.saveResults();
@@ -437,103 +444,110 @@ class CareerCompassApp {
 
   /**
    * Send email report automatically (called when test is completed)
+   * @param {HTMLElement} [pdfSourceElement] - Optional element to use for PDF generation
+   *   (used when rendering off-screen with showResultsToUser: false)
    */
-  async sendEmailReport() {
+  async sendEmailReport(pdfSourceElement) {
     console.log('📧 Attempting to send email report...');
 
-    try {
-      Loading.show('Sending results...', 'Please wait while we process your submission');
+    const MAX_USER_RETRIES = 3;
 
-      const studentName = this.demographics.studentName || 'Unknown Student';
-      const emailSubject = `${this.testData.testName} Results - ${studentName}`;
+    for (let attempt = 0; attempt <= MAX_USER_RETRIES; attempt++) {
+      try {
+        Loading.show('Sending results...', 'Please wait while we process your submission');
 
-      // Create simple email body
-      const emailBody = this.createSimpleEmailBody();
+        const studentName = this.demographics.studentName || 'Unknown Student';
+        const emailSubject = `${this.testData.testName} Results - ${studentName}`;
 
-      // Build FormData
-      const formData = new FormData();
-      formData.append('access_key', Config.mailer.accessKey);
-      formData.append('subject', emailSubject);
-      formData.append('html', emailBody);
+        // Create simple email body
+        const emailBody = this.createSimpleEmailBody();
 
-      // Generate and attach PDF if enabled AND response is valid (not fraud)
-      if (Config.attachPdfReport && this.isValidResponse !== false) {
-        console.log('📄 Generating PDF attachment...');
+        // Build FormData
+        const formData = new FormData();
+        formData.append('access_key', Config.mailer.accessKey);
+        formData.append('subject', emailSubject);
+        formData.append('html', emailBody);
 
-        // Wait a moment for DOM rendering to settle
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Generate and attach PDF if enabled AND response is valid (not fraud)
+        if (Config.attachPdfReport && this.isValidResponse !== false) {
+          console.log('📄 Generating PDF attachment...');
 
-        const pdfBlob = await this.generatePdfBlob();
-        const pdfFilename = `${studentName.replace(/[^a-zA-Z0-9]/g, '_')}_${this.testData.testName.replace(/[^a-zA-Z0-9]/g, '_')}_Report.pdf`;
+          // Wait for DOM rendering to settle
+          await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 200)));
 
-        formData.append('attachment', pdfBlob, pdfFilename);
-        console.log('✅ PDF attached:', pdfFilename);
-      } else if (this.isValidResponse === false) {
-        console.log('⚠️ Skipping PDF generation - invalid response pattern detected');
-      }
+          const pdfBlob = await this.generatePdfBlob(pdfSourceElement);
+          const pdfFilename = `${studentName.replace(/[^a-zA-Z0-9]/g, '_')}_${this.testData.testName.replace(/[^a-zA-Z0-9]/g, '_')}_Report.pdf`;
 
-      console.log('📤 Sending to API:', Config.mailer.apiUrl);
-      console.log('📋 Subject:', emailSubject);
-      console.log('📎 PDF attachment:', Config.attachPdfReport);
+          formData.append('attachment', pdfBlob, pdfFilename);
+          console.log('✅ PDF attached:', pdfFilename);
+        } else if (this.isValidResponse === false) {
+          console.log('⚠️ Skipping PDF generation - invalid response pattern detected');
+        }
 
-      // Use retry mechanism for email sending
-      const emailResult = await ErrorHandler.retryApiCall(async () => {
-        const response = await fetch(Config.mailer.apiUrl, {
-          method: 'POST',
-          body: formData
+        console.log('📤 Sending to API:', Config.mailer.apiUrl);
+        console.log('📋 Subject:', emailSubject);
+        console.log('📎 PDF attachment:', Config.attachPdfReport);
+
+        // Use retry mechanism for email sending
+        const emailResult = await ErrorHandler.retryApiCall(async () => {
+          const response = await fetch(Config.mailer.apiUrl, {
+            method: 'POST',
+            body: formData
+          });
+
+          console.log('📥 API response status:', response.status);
+
+          const result = await response.json();
+          console.log('📥 API response:', result);
+
+          if (!result.success) {
+            throw new Error(result.message || 'Email API returned failure');
+          }
+
+          return result;
+        }, {
+          maxRetries: 3,
+          initialDelay: 2000,
+          onRetry: (retryNum, maxRetries, delay) => {
+            console.log(`⚠️ Email attempt ${retryNum}/${maxRetries} failed. Retrying in ${delay}ms...`);
+            Loading.show('Sending results...', `Retrying (${retryNum}/${maxRetries})...`);
+          }
         });
 
-        console.log('📥 API response status:', response.status);
+        console.log('✅ Email sent successfully!');
+        Loading.hide();
 
-        const result = await response.json();
-        console.log('📥 API response:', result);
+        // Track successful email
+        Analytics.trackEmailSent(true);
+        return; // Success — exit the retry loop
 
-        if (!result.success) {
-          throw new Error(result.message || 'Email API returned failure');
-        }
+      } catch (error) {
+        console.error('❌ Email sending error:', error);
+        Loading.hide();
 
-        return result;
-      }, {
-        maxRetries: 3,
-        initialDelay: 2000,
-        onRetry: (attempt, maxRetries, delay) => {
-          console.log(`⚠️ Email attempt ${attempt}/${maxRetries} failed. Retrying in ${delay}ms...`);
-          Loading.show('Sending results...', `Retrying (${attempt}/${maxRetries})...`);
-        }
-      });
+        // Track failed email
+        Analytics.trackEmailSent(false, error.message);
 
-      console.log('✅ Email sent successfully!');
-      Loading.hide();
-
-      // Track successful email
-      Analytics.trackEmailSent(true);
-
-    } catch (error) {
-      console.error('❌ Email sending error:', error);
-      Loading.hide();
-
-      // Track failed email
-      Analytics.trackEmailSent(false, error.message);
-
-      // Show user-friendly error with retry option
-      const retry = await Dialog.showConfirm(
-        '<strong>Email Delivery Issue</strong><br><br>' +
-        'There was a problem sending your results via email. This could be due to a network issue.<br><br>' +
-        'Would you like to try sending again?',
-        'Email Error',
-        { confirmText: 'Retry', cancelText: 'Continue Anyway' }
-      );
-
-      if (retry) {
-        // Retry sending email
-        return await this.sendEmailReport();
-      } else {
-        // Continue without email
-        await Dialog.showAlert(
-          '<strong>Results Saved</strong><br><br>' +
-          'Your results have been saved locally. Please contact your assessment coordinator to retrieve your results manually.',
-          'Important'
+        // Show user-friendly error with retry option
+        const retry = await Dialog.showConfirm(
+          '<strong>Email Delivery Issue</strong><br><br>' +
+          'There was a problem sending your results via email. This could be due to a network issue.<br><br>' +
+          'Would you like to try sending again?',
+          'Email Error',
+          { confirmText: 'Retry', cancelText: 'Continue Anyway' }
         );
+
+        if (!retry) {
+          // User chose not to retry
+          await Dialog.showAlert(
+            '<strong>Results Saved</strong><br><br>' +
+            'Your results have been saved locally. Please contact your assessment coordinator to retrieve your results manually.',
+            'Important'
+          );
+          return;
+        }
+        // Otherwise loop continues to next attempt
+        console.log(`🔄 User requested retry (${attempt + 1}/${MAX_USER_RETRIES})`);
       }
     }
   }
@@ -776,16 +790,21 @@ class CareerCompassApp {
    * Generate PDF from rendered report HTML
    * Uses chunked approach to avoid canvas height limitations
    */
-  async generatePdfBlob() {
+  /**
+   * @param {HTMLElement} [sourceElement] - Optional element to render as PDF.
+   *   Falls back to document.getElementById('page-content').
+   */
+  async generatePdfBlob(sourceElement) {
     console.log('📄 Generating PDF from report...');
 
+    let wrapper = null;
     try {
       // Load PDF library if not already loaded
       Loading.show('Preparing PDF...', 'This may take a moment');
       await PdfLoader.load();
 
       // Get the full page content (includes header with logo + report)
-      const pageContent = document.getElementById('page-content');
+      const pageContent = sourceElement || document.getElementById('page-content');
 
       if (!pageContent) {
         throw new Error('Page content not found');
@@ -795,7 +814,7 @@ class CareerCompassApp {
       const clone = pageContent.cloneNode(true);
 
       // Create a fixed-width wrapper for consistent PDF output
-      const wrapper = document.createElement('div');
+      wrapper = document.createElement('div');
       wrapper.style.cssText = `
         width: 800px;
         position: absolute;
@@ -866,9 +885,6 @@ class CareerCompassApp {
 
       console.log('✅ PDF generated successfully, size:', Math.round(pdfBlob.size / 1024), 'KB');
 
-      // Clean up the temporary wrapper
-      document.body.removeChild(wrapper);
-
       Loading.hide();
       return pdfBlob;
 
@@ -877,6 +893,11 @@ class CareerCompassApp {
       Loading.hide();
       Analytics.trackError('pdf_generation_error', error.message);
       throw error;
+    } finally {
+      // Always clean up the temporary wrapper
+      if (wrapper && wrapper.parentNode) {
+        wrapper.parentNode.removeChild(wrapper);
+      }
     }
   }
 

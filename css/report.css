@@ -1,4 +1,11 @@
 /* Report Styling */
+
+/* Selector hooks for PDF smart slicing (js/pdf-loader.js).
+   These classes are applied with inline styles in renderer.js;
+   the class names exist solely as query selectors for page-break logic. */
+.guidance-box,
+.info-box,
+.cluster-group { /* styled inline */ }
 .report {
   padding: 18px;
   border-radius: 12px;
