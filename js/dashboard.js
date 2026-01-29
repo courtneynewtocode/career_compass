@@ -670,8 +670,11 @@ const Dashboard = {
   }
 };
 
-// Initialize dashboard when DOM is loaded
+// Initialize dashboard when DOM is loaded (only if authenticated)
 window.addEventListener('DOMContentLoaded', () => {
+  if (typeof DashboardAuth !== 'undefined' && Config.dashboard?.requireAuth && !DashboardAuth.isAuthenticated()) {
+    return; // Auth module will show login form; skip dashboard init
+  }
   Dashboard.init();
 });
 
