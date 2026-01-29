@@ -537,8 +537,16 @@ const Dashboard = {
         }
       };
 
-      // Generate and download PDF
-      await PdfLoader.generatePdf(container, options, true); // true = download directly
+      // Generate PDF blob and trigger download
+      const pdfBlob = await PdfLoader.generatePdf(container, options);
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = options.filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
 
       // Clean up
       document.body.removeChild(container);
