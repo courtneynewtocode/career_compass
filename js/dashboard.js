@@ -422,13 +422,39 @@ const Dashboard = {
       const testResponse = await fetch(`tests/${result.testId}.json`);
       const testData = await testResponse.json();
 
-      // Render the result in modal using Renderer
+      // Render the result in modal using Renderer (same structure as report)
       const modalBody = document.getElementById('modal-body');
       modalBody.innerHTML = '';
 
-      // Create a temporary container for rendering
+      const demographics = result.demographics || {};
+      const sections = result.reportData?.sections || {};
+
       const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = this.renderResultDetail(testData, result);
+      tempDiv.innerHTML = `
+        <div style="margin-bottom: 24px;">
+          <h2 style="margin: 0; color: var(--accent);">${testData.testName} : Student Report</h2>
+          <p style="color: var(--muted); font-size: 14px;">
+            Submitted: ${new Date(result.submittedAt).toLocaleString()}
+          </p>
+        </div>
+        <div class="report">
+          <h3>Student details</h3>
+          <div class="two-col">
+            ${testData.demographics?.fields?.map(field => `
+              <div class="metric">
+                <strong>${field.label}</strong>
+                <div class="small-muted">${Renderer.escapeHtml(demographics[field.key] || '')}</div>
+              </div>
+            `).join('') || ''}
+            <div class="metric">
+              <strong>Completion Time</strong>
+              <div class="small-muted">${this.formatDuration(result.completionTime)}</div>
+            </div>
+          </div>
+          ${Renderer.renderReportSections(testData, sections)}
+          ${Renderer.renderReportSummary(sections)}
+        </div>
+      `;
       modalBody.appendChild(tempDiv);
 
       // Show modal
@@ -460,7 +486,39 @@ const Dashboard = {
       const testResponse = await fetch(`tests/${result.testId}.json`);
       const testData = await testResponse.json();
 
-      // Create a container with the result content
+      // Build report HTML using Renderer (same as test-pdf.html)
+      const demographics = result.demographics || {};
+      const sections = result.reportData?.sections || {};
+
+      let reportHtml = `
+        <div class="container" style="position: relative; margin-bottom: 24px; min-height: 80px; padding-right: 190px;">
+          <img src="assets/cga-logo.jpg" alt="CGA Global" style="position: absolute; top: 0; right: 0; width: 180px; height: auto;" />
+          <h2 style="margin: 0;">${testData.testName} : Student Report</h2>
+          <p>The report below now provides you with a deeper understanding of your <em>True North</em> — the direction that aligns your unique potential and purpose.</p>
+          <p>Please use this report as a <strong>guide</strong> in your career decision-making journey. Know that your interests and potential can and most likely will change, depending on what you expose yourself to.</p>
+        </div>
+
+        <div class="report" id="report-area" style="margin-top:12px">
+          <h3>Student details</h3>
+          <div class="two-col">
+            ${testData.demographics?.fields?.map(field => `
+              <div class="metric">
+                <strong>${field.label}</strong>
+                <div class="small-muted">${Renderer.escapeHtml(demographics[field.key] || '')}</div>
+              </div>
+            `).join('') || ''}
+            <div class="metric">
+              <strong>Date</strong>
+              <div class="small-muted">${demographics.date || new Date(result.submittedAt).toISOString().slice(0, 10)}</div>
+            </div>
+          </div>
+
+          ${Renderer.renderReportSections(testData, sections)}
+          ${Renderer.renderReportSummary(sections)}
+        </div>
+      `;
+
+      // Create off-screen container (same approach as test-pdf.html)
       const container = document.createElement('div');
       container.style.cssText = `
         width: 800px;
@@ -468,81 +526,48 @@ const Dashboard = {
         left: -9999px;
         top: 0;
         background: white;
-        padding: 20px;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       `;
-
-      // Render the result detail
-      container.innerHTML = this.renderResultDetail(testData, result);
+      container.innerHTML = reportHtml;
       document.body.appendChild(container);
 
-      // Add PDF-specific styling
+      // Add PDF-specific styling (same as test-pdf.html)
       const style = document.createElement('style');
       style.textContent = `
-        h3 {
-          margin-top: 20px !important;
-          padding-top: 10px !important;
-          color: #0b8f8f !important;
-        }
-        .metric {
-          padding: 8px;
-          background: #f8feff;
-          border-radius: 8px;
-          margin-bottom: 8px;
-        }
-        .top-clusters {
-          background-color: rgba(148, 196, 148, 0.3);
-          padding: 12px;
-          border-radius: 10px;
-        }
-        .neutral-clusters {
-          background-color: rgba(128, 128, 128, 0.12);
-          padding: 12px;
-          border-radius: 10px;
-        }
-        .low-clusters {
-          background-color: rgba(171, 127, 119, 0.2);
-          padding: 12px;
-          border-radius: 10px;
-        }
+        .btn { display: none !important; }
+        .container { margin-bottom: 3px !important; min-height: auto !important; }
+        img[src*="clusters.png"] { display: none !important; }
+        .no-break { padding-top: 0 !important; }
+        .guidance-box, .info-box { display: block !important; overflow: hidden !important; }
+        .guidance-box > img, .info-box > img { float: left !important; margin-right: 12px !important; }
+        h3 { margin-top: 0 !important; padding-top: 30px !important; }
       `;
       container.insertBefore(style, container.firstChild);
 
+      // Hide Report Summary from PDF (same as test-pdf.html)
+      container.querySelectorAll('h3').forEach((h3) => {
+        if (h3.textContent.toLowerCase().includes('report summary')) {
+          h3.style.display = 'none';
+          let nextEl = h3.nextElementSibling;
+          while (nextEl) {
+            if (nextEl.tagName === 'TABLE') {
+              nextEl.style.display = 'none';
+              break;
+            }
+            nextEl = nextEl.nextElementSibling;
+          }
+        }
+      });
+
       // Configure PDF options
       const studentName = result.demographics?.studentName || 'Student';
-      const options = {
-        margin: [10, 10, 10, 10],
-        filename: `${studentName.replace(/[^a-zA-Z0-9]/g, '_')}_${testData.testName.replace(/[^a-zA-Z0-9]/g, '_')}_Report.pdf`,
-        image: {
-          type: 'jpeg',
-          quality: 0.95
-        },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          allowTaint: true,
-          backgroundColor: '#ffffff',
-          windowHeight: 4000,
-          width: 800
-        },
-        jsPDF: {
-          unit: 'mm',
-          format: 'a4',
-          orientation: 'portrait',
-          compress: true
-        },
-        pagebreak: {
-          mode: ['css', 'legacy']
-        }
-      };
+      const filename = `${studentName.replace(/[^a-zA-Z0-9]/g, '_')}_${testData.testName.replace(/[^a-zA-Z0-9]/g, '_')}_Report.pdf`;
 
       // Generate PDF blob and trigger download
-      const pdfBlob = await PdfLoader.generatePdf(container, options);
+      const pdfBlob = await PdfLoader.generatePdf(container);
       const url = URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = options.filename;
+      link.download = filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
